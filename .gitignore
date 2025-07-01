@@ -178,3 +178,4 @@ dist
 build
 # ただしindex.htmlは除外しない
 !build/index.html
+!build/CNAME
