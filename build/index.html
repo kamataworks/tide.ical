@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>潮まわりカレンダー - tide.ical</title>
+    <meta name="description" content="日本の潮まわり情報をカレンダーアプリで確認できます。大潮・小潮などの期間を自動更新で取得。">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .primary-method {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border: 2px solid #e3f2fd;
+        }
+
+        .primary-method h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #1976d2;
+        }
+
+        .primary-method p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        .big-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .big-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .explanation {
+            background: #fff3e0;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .explanation h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .explanation p {
+            margin-bottom: 10px;
+        }
+
+        .explanation strong {
+            color: #e65100;
+        }
+
+        .advanced-options {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .advanced-options summary {
+            padding: 20px;
+            cursor: pointer;
+            background: #fafafa;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #666;
+            transition: background 0.3s ease;
+        }
+
+        .advanced-options summary:hover {
+            background: #f0f0f0;
+        }
+
+        .advanced-options[open] summary {
+            border-bottom: 1px solid #e0e0e0;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .manual-methods {
+            padding: 25px;
+        }
+
+        .method {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .method h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .method p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .copy-btn, .download-btn {
+            padding: 12px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .copy-btn:hover, .download-btn:hover {
+            background: #218838;
+        }
+
+        .copy-btn.copied {
+            background: #17a2b8;
+        }
+
+        .troubleshooting {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .troubleshooting h4 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .troubleshooting ul {
+            padding-left: 20px;
+        }
+
+        .troubleshooting li {
+            margin-bottom: 8px;
+        }
+
+        .troubleshooting strong {
+            color: #e65100;
+        }
+
+        .info-section {
+            background: #e8f5e8;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .info-section h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul {
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .url-input-group {
+                flex-direction: column;
+            }
+
+            .url-input-group input {
+                margin-bottom: 10px;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌊 潮まわりカレンダー</h1>
+            <p>日本の潮まわり情報をカレンダーアプリで確認できます</p>
+        </header>
+
+        <main class="content">
+            <!-- メインの追加方法 -->
+            <div class="primary-method">
+                <h2>📅 カレンダーに追加</h2>
+                <p>ボタンを押すだけで、お使いのカレンダーアプリに潮まわり情報が追加されます</p>
+                <a href="webcal://kamataworks.github.io/tide.ical/ushio.ics" class="big-button">
+                    📅 カレンダーに追加
+                </a>
+            </div>
+
+            <!-- 説明 -->
+            <div class="explanation">
+                <h3>💡 これは何？</h3>
+                <p>
+                    潮まわり（大潮・小潮など）の期間を、普段お使いのカレンダーアプリ
+                    （iPhone / Android / Google Calendar など）で確認できるようになります。
+                </p>
+                <p>
+                    <strong>自動更新</strong>:一度追加すれば、最新の潮まわり情報が自動で反映されます。
+                </p>
+            </div>
+
+            <!-- 詳細オプション -->
+            <details class="advanced-options">
+                <summary>🔧 うまくいかない場合・その他の方法</summary>
+                <div class="manual-methods">
+                    <p>上のボタンでうまくいかない場合は、以下の方法をお試しください:</p>
+
+                    <div class="method">
+                        <h4>方法1: アドレスをコピーして手動追加</h4>
+                        <p>カレンダーアプリの「カレンダーを追加」機能で以下のアドレスを入力:</p>
+                        <div class="url-input-group">
+                            <input type="text" readonly value="webcal://kamataworks.github.io/tide.ical/ushio.ics" id="webcal-url">
+                            <button onclick="copyToClipboard('webcal-url')" class="copy-btn">📋 コピー</button>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h4>方法2: ファイルをダウンロード</h4>
+                        <p>ファイルをダウンロードしてカレンダーアプリで開く:</p>
+                        <div class="url-input-group">
+                            <input type="text" readonly value="https://kamataworks.github.io/tide.ical/ushio.ics" id="https-url">
+                            <button onclick="copyToClipboard('https-url')" class="copy-btn">📋 コピー</button>
+                        </div>
+                        <a href="https://kamataworks.github.io/tide.ical/ushio.ics" download class="download-btn">📥 ダウンロード</a>
+                    </div>
+                </div>
+            </details>
+
+        </main>
+    </div>
+
+    <!-- トースト通知 -->
+    <div id="toast" class="toast">
+        📋 URLをコピーしました！
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const button = element.nextElementSibling;
+
+            // モダンブラウザでのコピー
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(element.value).then(() => {
+                    showCopySuccess(button);
+                }).catch(() => {
+                    fallbackCopy(element, button);
+                });
+            } else {
+                // フォールバック
+                fallbackCopy(element, button);
+            }
+        }
+
+        function fallbackCopy(element, button) {
+            element.select();
+            element.setSelectionRange(0, 99999); // モバイル対応
+
+            try {
+                document.execCommand('copy');
+                showCopySuccess(button);
+            } catch (err) {
+                alert('コピーに失敗しました。手動でURLを選択してコピーしてください。');
+            }
+        }
+
+        function showCopySuccess(button) {
+            // ボタンの表示を変更
+            const originalText = button.textContent;
+            button.textContent = '✅ コピー完了';
+            button.classList.add('copied');
+
+            // トースト表示
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+
+            // 2秒後に元に戻す
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // ページ読み込み時の処理
+        document.addEventListener('DOMContentLoaded', function() {
+            // iOS Safari対応:webcalリンクのフォールバック
+            const webcalLink = document.querySelector('a[href^="webcal://"]');
+            if (webcalLink && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                webcalLink.addEventListener('click', function(e) {
+                    // iOS Safariでは少し待ってからhttpsリンクも提供
+                    setTimeout(() => {
+                        if (confirm('カレンダーアプリが開かない場合は、設定からカレンダーを手動で追加しますか？')) {
+                            document.querySelector('details').open = true;
+                        }
+                    }, 3000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
