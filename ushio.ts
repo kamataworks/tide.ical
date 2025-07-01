@@ -16,10 +16,10 @@ import { generateICSContent, saveICSFile, generateTideStatistics, type TidePerio
  */
 function calculateDateRange(baseDate: Date = new Date()): { startDate: Date; endDate: Date } {
   // 基準月の3ヶ月前を開始日とする
-  const startDate = new Date(baseDate.getFullYear(), baseDate.getMonth() - 3, 1);
+  const startDate = new Date(baseDate.getFullYear(), baseDate.getMonth() - 3, baseDate.getDate());
 
   // 基準月の12ヶ月後の月末を終了日とする
-  const endDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 13, 0);
+  const endDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 13, baseDate.getDate());
 
   return { startDate, endDate };
 }
