@@ -176,3 +176,5 @@ dist
 
 # 生成物
 build
+# ただしindex.htmlは除外しない
+!build/index.html
