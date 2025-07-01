@@ -2,6 +2,10 @@
 name: Deploy static content to Pages
 
 on:
+  # 毎日午前0時（JST）に実行（UTC 15時）
+  schedule:
+    - cron: '0 15 * * *'
+
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
