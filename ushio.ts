@@ -18,8 +18,8 @@ function calculateDateRange(baseDate: Date = new Date()): { startDate: Date; end
   // 基準月の3ヶ月前を開始日とする
   const startDate = new Date(baseDate.getFullYear(), baseDate.getMonth() - 3, baseDate.getDate());
 
-  // 基準月の12ヶ月後を終了日とする
-  const endDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 13, baseDate.getDate());
+  // 基準月の24ヶ月後を終了日とする
+  const endDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 25, baseDate.getDate());
 
   return { startDate, endDate };
 }
