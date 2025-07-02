@@ -7,5 +7,7 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "license": "MIT",
+  "author": "kamataryo (www.kamataworks.com)"
 }

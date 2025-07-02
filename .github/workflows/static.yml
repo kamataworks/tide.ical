@@ -36,8 +36,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - name: Set timezone to Asia/Tokyo
+        run: |
+          echo "TZ=Asia/Tokyo" >> $GITHUB_ENV
+          sudo timedatectl set-timezone Asia/Tokyo || true
       - run: bun install
-      - run: bun run ushio.ts
+      - name: Generate ICS file
+        env:
+          TZ: Asia/Tokyo
+        run: bun run ushio.ts
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

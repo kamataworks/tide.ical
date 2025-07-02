@@ -70,7 +70,9 @@ export function calculateMoonPhases(startDate: Date, endDate: Date): Array<{
 
   const currentDate = new Date(startDate);
   while (currentDate <= endDate) {
-    const moonAge = calculateMoonAge(currentDate);
+    // Asia/Tokyoタイムゾーンで正午の時刻を基準に月齢を計算
+    const noonJST = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 12, 0, 0);
+    const moonAge = calculateMoonAge(noonJST);
     const longitudeDifference = calculateLongitudeDifference(moonAge);
     const emoji = getMoonEmoji(moonAge);
 

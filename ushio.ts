@@ -3,7 +3,12 @@
 /**
  * 潮まわりICSファイル生成メインスクリプト
  * 実行日時の月の3ヶ月前から12ヶ月後（合計15ヶ月分）の潮まわり情報を生成
+ *
+ * タイムゾーンは常にAsia/Tokyoに固定されます
  */
+
+// タイムゾーンをAsia/Tokyoに固定
+process.env.TZ = 'Asia/Tokyo';
 
 import { calculateMoonPhases } from './src/moon-phase.ts';
 import { calculateTidePeriods } from './src/tide-calculator.ts';
@@ -56,9 +61,10 @@ async function main(): Promise<void> {
   try {
     console.log('🌊 潮まわりICSファイル生成を開始します...\n');
 
-    // 実行時刻を取得
+    // 実行時刻を取得（Asia/Tokyoタイムゾーンで統一）
     const now = new Date();
-    console.log(`実行日時: ${formatDateJapanese(now)} ${now.toLocaleTimeString('ja-JP')}`);
+    console.log(`実行日時: ${formatDateJapanese(now)} ${now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo' })}`);
+    console.log(`タイムゾーン: ${Intl.DateTimeFormat().resolvedOptions().timeZone} (固定: Asia/Tokyo)`);
 
     // 期間を計算
     const { startDate, endDate } = calculateDateRange(now);
