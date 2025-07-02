@@ -109,7 +109,7 @@
             padding: 25px;
             border-radius: 12px;
             margin-bottom: 30px;
-            border-left: 4px solid #f59e0b;
+            /* border-left: 4px solid #f59e0b; */
         }
 
         .explanation h3 {
@@ -392,18 +392,20 @@
             <div class="explanation">
                 <h3>💡 これは何？</h3>
                 <p>
-                    潮まわり（大潮・小潮など）の期間を、普段お使いのカレンダーアプリ（iPhone / Android / Google カレンダー など）で確認できるようになります。
+                    潮まわり（大潮・小潮など）の期間を、普段お使いのカレンダーアプリ（iPhone / Android / Google カレンダー など）で確認できるようになります。無料で利用可能です。
                 </p>
-                <p>
-                    <strong>自動更新</strong>:<br/>
+                  <dl>
+                    <dt><strong>自動更新</strong></dt>
+                  </dl>
+                  <dd>
                     一度追加すれば、最新の潮まわり情報が自動で反映されます。<br/>
                     最大2年間の潮まわりが閲覧できます。
-                </p>
+                  </dd>
             </div>
 
             <!-- 詳細オプション -->
             <details class="advanced-options">
-                <summary>🔧 うまくいかない場合・その他の方法</summary>
+                <summary>うまくいかない場合・その他の方法</summary>
                 <div class="manual-methods">
                     <p>上のボタンでうまくいかない場合は、以下の方法をお試しください:</p>
 
@@ -430,7 +432,7 @@
 
             <!-- FAQ セクション -->
             <details class="advanced-options">
-                <summary>❓ よくある質問（FAQ）</summary>
+                <summary>よくある質問（FAQ）</summary>
                 <div class="manual-methods">
 
                     <div class="method">
@@ -446,9 +448,9 @@
 
                     <div class="method">
                       <h4>🚫 このカレンダーではできないこと</h4>
-                      <p>このカレンダーでは「干潮・満潮の時刻」は表示していません。潮まわり（大潮・中潮など）を長期でざっくり把握するためのツールです。</p>
-                      <p>詳しい潮汐時刻が必要な場合は、気象庁などの詳細な潮汐表をご参照ください。</p>
-                      <p>今後、需要があれば対応を検討するかもしれません。</p>
+                      <p>このカレンダーでは「干潮・満潮の時刻」は表示していません。潮まわり（大潮・中潮など）を長期でざっくり把握するためのツールです。<br/>
+                      詳しい潮汐時刻が必要な場合は、気象庁の<a href="https://www.data.jma.go.jp/kaiyou/db/tide/suisan/index.php">潮位表</a>などを参照してください。</p>
+                      <p>なお、今後、需要があれば対応を検討するかもしれません。</p>
                     </div>
 
 
@@ -458,21 +460,22 @@
                     </div>
 
                     <div class="method">
-                        <h4>🤝 このプロジェクトを応援したい・改善提案がある</h4>
-                        <p><strong>オープンな貢献</strong>: GitHub issues やプルリクエストをお待ちしています。バグ報告、機能追加提案、コード改善などを歓迎します。</p>
-                        <p><strong>GitHub</strong>: <a href="https://github.com/kamataworks/tide.ical" target="_blank" rel="noopener">https://github.com/kamataworks/tide.ical</a></p>
+                        <h4>⚠️ このサービスについて知っておくべきこと</h4>
+                        <p>個人が開発・運営するオープンソースプロジェクトです。潮まわり情報は参考程度にご利用ください。</p>
+                        <p>漁業や海洋活動など重要な用途では、気象庁や海上保安庁などの公的機関が発表する情報をご確認ください。</p>
+                        <p><strong>免責事項</strong>: データの正確性や利用による損害について責任は負いかねます。また予告なくサービスを停止する場合があります。</p>
                     </div>
 
                     <div class="method">
-                        <h4>⚠️ このサービスについて知っておくべきこと</h4>
-                        <p>個人が開発・運営するオープンソースプロジェクトです。潮まわり情報は参考程度にご利用ください。</p>
-                        <p>漁業や海洋活動など重要な用途では、気象庁などの公式情報をご確認ください。</p>
-                        <p><strong>免責事項</strong>: データの正確性や利用による損害について責任は負いかねます。予告なくサービスを停止する場合があります。</p>
+                        <h4>🤝 このプロジェクトを応援したい・改善提案がある</h4>
+                        <p><strong>オープンな貢献</strong>: GitHub issues やプルリクエストをお待ちしています。バグ報告、機能追加提案、コード改善などを歓迎します。以下のリンクよりお問い合わせください。</p>
+                        <p><a href="https://github.com/kamataworks/tide.ical" target="_blank" rel="noopener">GitHub リポジトリ</a></p>
+                        <p><a href="https://coff.ee/kamataworks" target="_blank">コーヒーを奢る ☕️</a></p>
                     </div>
 
                     <div class="method">
                         <h4>🔄 データはいつ更新される？</h4>
-                        <p>自動で最新情報に更新されます。今日から3ヶ月前〜2年後まで（約27ヶ月分）の情報を提供しています。</p>
+                        <p>自動で毎日最新情報に更新されます。今日から3ヶ月前〜2年後まで（約27ヶ月分）の情報を提供しています。</p>
                     </div>
 
                     <div class="method">
@@ -489,7 +492,7 @@
                     <div class="method">
                         <h4>💼 企業・組織での利用や専用機能の開発について</h4>
                         <p>社内システムへの組み込みや専用機能の開発をご検討の場合は、下記よりご相談いただけます。</p>
-                        <p>カスタマイズや受託開発のご相談: <a href="https://www.kamataworks.com/contact" target="_blank" rel="noopener">www.kamataworks.com/contact</a></p>
+                        <p><a href="https://www.kamataworks.com/contact" target="_blank" rel="noopener">カスタマイズや受託開発のご相談</a></p>
                         <p>企業向けサポートやライセンスについてもご相談いただけます。</p>
                     </div>
 
