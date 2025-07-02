@@ -125,20 +125,3 @@ export function calculateTidePeriods(moonPhases: Array<{
 
   return tidePeriods;
 }
-
-/**
- * 潮まわり名に基づいて説明を取得する
- * @param tideName 潮まわり名
- * @returns 潮まわりの説明
- */
-export function getTideDescription(tideName: TideName): string {
-  const descriptions: Record<TideName, string> = {
-    '大潮': '満潮と干潮の差が最も大きい時期',
-    '中潮': '大潮と小潮の中間の潮汐',
-    '小潮': '満潮と干潮の差が最も小さい時期',
-    '長潮': '小潮の終わりで潮の動きが緩やかな時期',
-    '若潮': '小潮から大潮に向かう時期'
-  };
-
-  return descriptions[tideName];
-}

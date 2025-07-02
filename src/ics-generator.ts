@@ -3,7 +3,7 @@
  * RFC 5545準拠のカレンダー形式で潮まわり情報を出力する
  */
 
-import { type TideName, getTideDescription } from './tide-calculator.ts';
+import type { TideName } from './tide-calculator.ts';
 
 export interface TidePeriod {
   tideName: TideName;
@@ -71,23 +71,15 @@ function foldICSText(text: string): string {
 function generateICSEvent(tidePeriod: TidePeriod, uid: string): string {
   const startDate = formatICSDate(tidePeriod.startDate);
   const endDate = formatICSDate(new Date(tidePeriod.endDate.getTime() + 24 * 60 * 60 * 1000)); // 終了日の翌日
-  const now = formatICSDateTime(new Date());
 
   const summary = `${tidePeriod.emoji} ${tidePeriod.tideName}`;
-  const description = getTideDescription(tidePeriod.tideName);
 
   const event = [
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTART;VALUE=DATE:${startDate}`,
     `DTEND;VALUE=DATE:${endDate}`,
-    `DTSTAMP:${now}`,
-    `CREATED:${now}`,
-    `LAST-MODIFIED:${now}`,
     foldICSText(`SUMMARY:${summary}`),
-    foldICSText(`DESCRIPTION:${description}`),
-    'TRANSP:TRANSPARENT',
-    'STATUS:CONFIRMED',
     'END:VEVENT'
   ].join('\r\n');
 
@@ -120,6 +112,8 @@ export function generateICSContent(
 
   // イベント生成
   const events = tidePeriods.map((period, index) => {
+    // TODO: ここ、うまく縮めたらもっと転送サイズを減らせるが、uid を変更するとイベントが重複して壊れるので、もし変更するなら日付で条件判定するようにする。
+    // 今はやりたくない
     const uid = `tide-${formatICSDate(period.startDate)}-${index}@tide.ical`;
     return generateICSEvent(period, uid);
   }).join('\r\n');
