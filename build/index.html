@@ -305,6 +305,66 @@
         .toast.show {
             transform: translateX(0);
         }
+
+        /* カレンダープレビュー用のスタイル */
+        .calendar-preview {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .calendar-preview h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #1e40af;
+            text-align: center;
+        }
+
+        .calendar-preview p {
+            font-size: 1rem;
+            margin-bottom: 25px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        #calendar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* FullCalendar のカスタマイズ */
+        .fc-theme-standard .fc-scrollgrid {
+            border: none;
+        }
+
+        .fc-theme-standard td, .fc-theme-standard th {
+            border-color: #e5e7eb;
+        }
+
+        .fc-daygrid-event {
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 600px) {
+            .calendar-preview {
+                padding: 20px;
+            }
+
+            .fc-toolbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .fc-toolbar-chunk {
+                display: flex;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -322,6 +382,11 @@
                 <a href="webcal://tide.ical.kamataworks.com/ushio.ics" class="big-button">
                     📅 カレンダーに追加
                 </a>
+            </div>
+
+            <!-- カレンダープレビュー -->
+            <div class="calendar-preview">
+                <div id="calendar"></div>
             </div>
 
             <!-- 説明 -->
@@ -371,6 +436,96 @@
     <div id="toast" class="toast">
         📋 URLをコピーしました！
     </div>
+
+    <!-- FullCalendar JavaScript -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js'></script>
+    <script>
+        // ICSファイルをパースする関数
+        function parseICS(icsText) {
+            const events = [];
+            const lines = icsText.split('\n');
+            let currentEvent = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line === 'BEGIN:VEVENT') {
+                    currentEvent = {};
+                } else if (line === 'END:VEVENT' && currentEvent) {
+                    if (currentEvent.title && currentEvent.start) {
+                        events.push({
+                            title: currentEvent.title,
+                            start: currentEvent.start,
+                            end: currentEvent.end,
+                            allDay: true
+                        });
+                    }
+                    currentEvent = null;
+                } else if (currentEvent) {
+                    if (line.startsWith('SUMMARY:')) {
+                        currentEvent.title = line.substring(8);
+                    } else if (line.startsWith('DTSTART;VALUE=DATE:')) {
+                        const dateStr = line.substring(19);
+                        currentEvent.start = formatDate(dateStr);
+                    } else if (line.startsWith('DTEND;VALUE=DATE:')) {
+                        const dateStr = line.substring(17);
+                        currentEvent.end = formatDate(dateStr);
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        // YYYYMMDD形式をYYYY-MM-DD形式に変換
+        function formatDate(dateStr) {
+            if (dateStr.length === 8) {
+                return dateStr.substring(0, 4) + '-' +
+                       dateStr.substring(4, 6) + '-' +
+                       dateStr.substring(6, 8);
+            }
+            return dateStr;
+        }
+
+        let events = null
+        // カレンダーを初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ja',
+                headerToolbar: {
+                    left: 'prev',
+                    center: 'title',
+                    right: 'next'
+                },
+                height: 'auto',
+                events: async function(fetchInfo, successCallback, failureCallback) {
+
+                  try {
+                    if(!events) {
+                      const response = await fetch('./ushio.ics')
+                      if (!response.ok) {
+                          throw new Error('ICSファイルの読み込みに失敗しました');
+                      }
+                      const icsText = await response.text();
+                      events = parseICS(icsText);
+                    }
+                    successCallback(events);
+                  } catch {
+                    console.error('Error loading ICS file:', error);
+                    failureCallback(error);
+                  }
+                },
+                eventDisplay: 'block',
+                dayMaxEvents: 3,
+                moreLinkClick: 'popover'
+            });
+
+            calendar.render();
+        });
+    </script>
 
     <script>
         function copyToClipboard(elementId) {
