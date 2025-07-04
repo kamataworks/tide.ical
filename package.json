@@ -9,5 +9,8 @@
     "typescript": "^5.0.0"
   },
   "license": "MIT",
-  "author": "kamataryo (www.kamataworks.com)"
+  "author": "kamataryo (www.kamataworks.com)",
+  "scripts": {
+    "build:ushio": "bun run ushio.ts"
+  }
 }

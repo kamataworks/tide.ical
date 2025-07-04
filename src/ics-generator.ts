@@ -72,18 +72,39 @@ function generateICSEvent(tidePeriod: TidePeriod, uid: string): string {
   const startDate = formatICSDate(tidePeriod.startDate);
   const endDate = formatICSDate(new Date(tidePeriod.endDate.getTime() + 24 * 60 * 60 * 1000)); // 終了日の翌日
 
+  const isSingleDayUshio = tidePeriod.startDate.getTime() === tidePeriod.endDate.getTime()
+
   const summary = `${tidePeriod.emoji} ${tidePeriod.tideName}`;
 
   const event = [
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTART;VALUE=DATE:${startDate}`,
-    `DTEND;VALUE=DATE:${endDate}`,
+    isSingleDayUshio ? false : `DTEND;VALUE=DATE:${endDate}`, // NOTE: 短日イベントの時は省略できる
     foldICSText(`SUMMARY:${summary}`),
     'END:VEVENT'
-  ].join('\r\n');
+  ]
+    .filter(x => !!x)
+    .join('\r\n');
 
   return event;
+}
+
+function encodeUniqueId(yyyymmdd: string) {
+  // YYYYMMDD → 日付オブジェクト
+  const year = parseInt(yyyymmdd.slice(0, 4), 10);
+  const month = parseInt(yyyymmdd.slice(4, 6), 10) - 1; // 0-based month
+  const day = parseInt(yyyymmdd.slice(6, 8), 10);
+  const date = new Date(Date.UTC(year, month, day));
+
+  // 1970-01-01 UTC からの経過日数
+  const epochMs = date.getTime();
+  const epochDays = Math.floor(epochMs / (1000 * 60 * 60 * 24));
+
+  // Base36エンコード（小文字）
+  const dateStr = epochDays.toString(36);
+
+  return dateStr;
 }
 
 /**
@@ -96,8 +117,6 @@ export function generateICSContent(
   tidePeriods: TidePeriod[],
   calendarName: string = '潮まわりカレンダー'
 ): string {
-  const now = formatICSDateTime(new Date());
-
   // ICSヘッダー
   const header = [
     'BEGIN:VCALENDAR',
@@ -111,10 +130,9 @@ export function generateICSContent(
   ].join('\r\n');
 
   // イベント生成
-  const events = tidePeriods.map((period, index) => {
-    // TODO: ここ、うまく縮めたらもっと転送サイズを減らせるが、uid を変更するとイベントが重複して壊れるので、もし変更するなら日付で条件判定するようにする。
-    // 今はやりたくない
-    const uid = `tide-${formatICSDate(period.startDate)}-${index}@tide.ical`;
+  const events = tidePeriods.map((period) => {
+    const yyyymmdd = formatICSDate(period.startDate);
+    const uid = encodeUniqueId(yyyymmdd);
     return generateICSEvent(period, uid);
   }).join('\r\n');
 
