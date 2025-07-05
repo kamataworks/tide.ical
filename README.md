@@ -16,6 +16,9 @@ bun install
 
 # ICSファイル生成
 bun run ushio.ts
+
+# 気象庁サイトから潮位表ダウンロード
+bun run download.ts
 ```
 
 生成されたICSファイルは `./build/ushio.ics` に保存されます。

@@ -175,6 +175,7 @@ dist
 .DS_Store
 
 # 生成物
+cyoihyo
 build
 # ただしindex.htmlは除外しない
 !build/index.html
