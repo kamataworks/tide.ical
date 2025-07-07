@@ -2,7 +2,6 @@
  * 潮位表CSVファイルの読み込み・解析機能
  */
 
-import { exit } from 'process';
 import type { HarmonicConstants } from './harmonic-calculator.ts';
 
 type Choi = {
@@ -20,7 +19,7 @@ type Choi = {
       degree: number,
       minute: number,
     },
-    mSLTideStandardSurface: number,
+    MSLTideStandardSurface: number,
     MSLAltitude: number,
     tideStandardSurfaceAltitude: number,
     M2Amplitude: number,
@@ -86,29 +85,25 @@ export async function loadHarmonicConstants(
     const harmonics: HarmonicConstants = {
       stationCode,
       stationName: choi.station.name,
-      baseLevel: choi.mSLTideStandardSurface, // 潮位表基準面の標高 // toDO: これを使って良いのか？
+      baseLevel: choi.MSLTideStandardSurface,
       values: [
         {
           type: 'M2',
-          phase_direction: 1, // 正の遅角
           amplitude: choi.M2Amplitude,
           phase:     choi.M2Phase,
         },
         {
           type: 'S2',
-          phase_direction: 1, // 正の遅角
           amplitude: choi.S2Amplitude,
           phase:     choi.S2Phase,
         },
         {
           type: 'K1',
-          phase_direction: -1, // 負の遅角
           amplitude: choi.K1Amplitude,
           phase:     choi.K1Phase,
         },
         {
           type: 'O1',
-          phase_direction: -1, // 負の遅角
           amplitude: choi.O1Amplitude,
           phase:     choi.O1Phase,
         },

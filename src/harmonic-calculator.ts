@@ -12,7 +12,6 @@ export interface HarmonicConstants {
   baseLevel: number; // 潮位表基準面の標高
   values: {
     type: 'M2' | 'S2' | 'K1' | 'O1'; // 分潮の種類
-    phase_direction: 1 | -1; // 遅角の符号（1: 正, -1: 負）
     amplitude: number; // 振幅 (cm)
     phase: number;     // 遅角 (度)
   }[],
@@ -34,12 +33,12 @@ export interface TideResult {
   data: TideData[];
 }
 
-// 分潮の周期定数（時間）
-const TIDAL_PERIODS = {
-  M2: 12.4206012, // 主太陰半日周潮
-  S2: 12.0000000, // 主太陽半日周潮
-  K1: 23.9344696, // 太陰太陽日周潮
-  O1: 25.8193417  // 主太陰日周潮
+// 分潮の周期定数（角速度 degree/hour）
+const ANGULAR_VELOCITIES = {
+  M2: 28.9841042, // 主太陰半日周潮
+  S2: 30.0000000, // 主太陽半日周潮
+  K1: 15.0410686, // 太陰太陽日周潮
+  O1: 13.9430356, // 主太陰日周潮
 } as const;
 
 /**
@@ -66,11 +65,9 @@ export function calculateTideLevel(time: Date, harmonics: HarmonicConstants): nu
   const t = getHoursSinceEpoch(time);
 
   const tideLevel = harmonics.values.reduce((tideLevel, harmonic) => {
-    const period = TIDAL_PERIODS[harmonic.type];
-    const phase_direction = harmonic.phase_direction;
-    const angular = (2 * Math.PI / period) * t;
-    // NOTE: おそらく、phase の反映のさせ方？M2, S2, K1, O1 で+- が異なるとか？
-    return tideLevel + harmonic.amplitude * Math.cos(angular - phase_direction * degreesToRadians(harmonic.phase))
+    const velocity = ANGULAR_VELOCITIES[harmonic.type];
+    const angular = t * velocity * 2 * Math.PI / 360;
+    return tideLevel + harmonic.amplitude * Math.cos(angular + degreesToRadians(harmonic.phase))
   }, harmonics.baseLevel)
 
   return tideLevel

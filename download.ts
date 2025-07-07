@@ -17,7 +17,7 @@ const headerMap: Record<string, { type: 'string' | 'degreeAndMinute' | 'number' 
     "掲載地点名": { type: "linkText", normalizedName: "station" },
     "緯度": { type: "degreeAndMinute", normalizedName: "latitude" },
     "経度": { type: "degreeAndMinute", normalizedName: "longitude" },
-    "MSL-潮位表基準面": { type: "number", normalizedName: "mSLTideStandardSurface" },
+    "MSL-潮位表基準面": { type: "number", normalizedName: "MSLTideStandardSurface" },
     "MSLの標高": { type: "number", normalizedName: "MSLAltitude" },
     "潮位表基準面の標高": { type: "number", normalizedName: "tideStandardSurfaceAltitude" },
     "主要4分潮/M2/M2の振幅": { type: "number", normalizedName: "M2Amplitude" },
