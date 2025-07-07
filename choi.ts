@@ -3,7 +3,7 @@
 /**
  * 潮位計算メインスクリプト
  *
- * 使用例: bun run cyoi.ts WN 20250701 20250705
+ * 使用例: bun run choi.ts WN 20250701 20250705
  * 引数: [地点記号] [開始日YYYYMMDD] [終了日YYYYMMDD]
  */
 
@@ -45,17 +45,17 @@ function generateOutputPath(stationCode: string, startDate: string, endDate: str
  * 使用方法を表示
  */
 function showUsage(): void {
-  console.log('使用方法: bun run cyoi.ts [地点記号] [開始日] [終了日]');
+  console.log('使用方法: bun run choi.ts [地点記号] [開始日] [終了日]');
   console.log('');
   console.log('引数:');
   console.log('  地点記号: 潮位表の地点記号（例: WN）');
   console.log('  開始日:   YYYYMMDD形式（例: 20250701）');
   console.log('  終了日:   YYYYMMDD形式（例: 20250705）');
   console.log('');
-  console.log('例: bun run cyoi.ts WN 20250701 20250705');
+  console.log('例: bun run choi.ts WN 20250701 20250705');
   console.log('');
   console.log('利用可能な地点記号を確認するには:');
-  console.log('  bun run cyoi.ts --list');
+  console.log('  bun run choi.ts --list');
 }
 
 /**
@@ -131,7 +131,7 @@ async function main(): Promise<void> {
     if (!harmonics) {
       console.error(`❌ 地点記号 '${stationCode}' が見つかりません。`);
       console.log('\n利用可能な地点記号を確認するには:');
-      console.log('  bun run cyoi.ts --list');
+      console.log('  bun run choi.ts --list');
       process.exit(1);
     }
 
