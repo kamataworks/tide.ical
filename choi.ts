@@ -8,7 +8,7 @@
  */
 
 import { generateTideData } from './src/harmonic-calculator.ts';
-import { loadHarmonicConstants, getAvailableStations } from './src/csv-parser.ts';
+import { loadHarmonicConstants, getAvailableStations } from './src/json-parser.ts';
 import { mkdir } from 'fs/promises';
 import { join } from 'path';
 

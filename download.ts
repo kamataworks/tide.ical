@@ -1,5 +1,4 @@
 import * as cheerio from 'cheerio';
-import { stringify } from "csv-stringify/sync";
 import fs from 'node:fs/promises'
 
 const landingUrl = 'https://www.data.jma.go.jp/kaiyou/db/tide/suisan/index.php'

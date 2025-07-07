@@ -4,8 +4,7 @@
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
-    "cheerio": "^1.1.0",
-    "csv-stringify": "^6.5.2"
+    "cheerio": "^1.1.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
