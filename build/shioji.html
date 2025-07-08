@@ -633,7 +633,8 @@
                             title: currentEvent.title,
                             start: currentEvent.start,
                             end: currentEvent.end,
-                            allDay: false
+                            allDay: false,
+                            color: '#15803d',
                         });
                     }
                     currentEvent = null;
@@ -893,7 +894,7 @@
             // カレンダーを初期化
             const calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
+                initialView: 'timeGridDay',
                 locale: 'ja',
                 headerToolbar: {
                     left: 'prev',
