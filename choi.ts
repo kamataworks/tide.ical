@@ -149,6 +149,18 @@ async function main(): Promise<void> {
 
     console.log(`📈 ${result.data.length}件のデータポイントを生成しました`);
 
+
+    // TODO:
+    // 検証用に気象庁の潮位表をダウンロードして、指定した地点の潮位データを取得する機能を追加する。
+    // URLの例: https://www.data.jma.go.jp/kaiyou/data/db/tide/suisan/txt/2025/WN.txt
+    // データのフォーマット:
+    // テキストファイルの改行コードは「LF」です。
+    // テキストファイルのフォーマットは以下のようになっています。
+    // 毎時潮位データ	：	　１～　７２カラム	　３桁×２４時間（０時から２３時）
+    //　年月日	：	７３～　７８カラム	　２桁×３
+　  // 地点記号	：	７９～　８０カラム	　２桁英数字記号
+
+
     // 出力ディレクトリを作成
     const outputPath = generateOutputPath(stationCode, startDateStr, endDateStr);
     const outputDir = join(process.cwd(), 'build', 'choi');
