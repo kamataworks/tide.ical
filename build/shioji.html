@@ -461,6 +461,103 @@
                 padding: 1px 4px;
             }
         }
+
+        /* 表示方式選択のスタイル */
+        .display-type-selector {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .display-type-selector h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #15803d;
+            text-align: center;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #1f2937;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .radio-label:hover {
+            background-color: #dcfce7;
+        }
+
+        .radio-label input[type="radio"] {
+            display: none;
+        }
+
+        .radio-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #22c55e;
+            border-radius: 50%;
+            margin-right: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .radio-custom::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .radio-label input[type="radio"]:checked + .radio-custom {
+            border-color: #15803d;
+            background-color: #f0fdf4;
+        }
+
+        .radio-label input[type="radio"]:checked + .radio-custom::after {
+            background: #15803d;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        @media (max-width: 600px) {
+            .radio-group {
+                gap: 10px;
+            }
+
+            .radio-label {
+                font-size: 1rem;
+                padding: 6px 10px;
+            }
+
+            .radio-custom {
+                width: 18px;
+                height: 18px;
+                margin-right: 10px;
+            }
+
+            .radio-custom::after {
+                width: 8px;
+                height: 8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -476,6 +573,24 @@
                 <h2>📍 表示地点を選択</h2>
                 <p>地図上の表示地点をクリックして選択してください</p>
                 <div id="map"></div>
+
+                <!-- 表示方式選択 -->
+                <div class="display-type-selector">
+                    <h3>📊 表示方式を選択</h3>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="displayType" value="shioji-extrema" checked>
+                            <span class="radio-custom"></span>
+                            時刻のみ表示（すっきり）
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="displayType" value="shioji">
+                            <span class="radio-custom"></span>
+                            時間の範囲を表示（詳細）
+                        </label>
+                    </div>
+                </div>
+
                 <button id="addCalendarBtn" class="big-button" disabled>
                     📅 カレンダーに追加
                 </button>
@@ -605,6 +720,7 @@
         let selectedStationCode = '';
         let selectedStationName = '';
         let stationMarkers = {};
+        let selectedDisplayType = 'shioji-extrema'; // デフォルトは極値版
 
         // ホスト判定関数
         function getBaseUrl() {
@@ -827,9 +943,12 @@
             }
 
             // ボタンとURL入力欄を更新
+            const edition = selectedStationName ? (
+              selectedDisplayType === 'shioji-extrema' ? '<small>（すっきり）</small>' : '<small>（詳細）</small>'
+            ) : ''
             const addBtn = document.getElementById('addCalendarBtn');
             addBtn.disabled = false;
-            addBtn.textContent = `📅 ${selectedStationName} をカレンダーに追加`;
+            addBtn.innerHTML = `📅 <span>${selectedStationName}</span>${edition}をカレンダーに追加`;
 
             updateURLInputs();
             loadCalendarData();
@@ -837,9 +956,11 @@
 
         // URL入力欄を更新
         function updateURLInputs() {
+            if (!selectedStationCode) return;
+
             const baseUrl = getBaseUrl();
-            const webcalUrl = `webcal://${baseUrl.replace('https://', '').replace('http://', '')}/shioji/${selectedStationCode}.ics`;
-            const httpsUrl = `${baseUrl}/shioji/${selectedStationCode}.ics`;
+            const webcalUrl = `webcal://${baseUrl.replace('https://', '').replace('http://', '')}/${selectedDisplayType}/${selectedStationCode}.ics`;
+            const httpsUrl = `${baseUrl}/${selectedDisplayType}/${selectedStationCode}.ics`;
 
             document.getElementById('webcal-url').value = webcalUrl;
             document.getElementById('https-url').value = httpsUrl;
@@ -859,7 +980,7 @@
 
             try {
                 const baseUrl = getBaseUrl();
-                const response = await fetch(`${baseUrl}/shioji/${selectedStationCode}.ics`);
+                const response = await fetch(`${baseUrl}/${selectedDisplayType}/${selectedStationCode}.ics`);
                 if (!response.ok) {
                     throw new Error('カレンダーデータの読み込みに失敗しました');
                 }
@@ -884,8 +1005,26 @@
         function onAddCalendarClick() {
             if (selectedStationCode) {
                 const baseUrl = getBaseUrl();
-                const webcalUrl = `webcal://${baseUrl.replace('https://', '').replace('http://', '')}/shioji/${selectedStationCode}.ics`;
+                const webcalUrl = `webcal://${baseUrl.replace('https://', '').replace('http://', '')}/${selectedDisplayType}/${selectedStationCode}.ics`;
                 window.location.href = webcalUrl;
+            }
+        }
+
+        // 表示方式変更時の処理
+        function onDisplayTypeChange(event) {
+            selectedDisplayType = event.target.value;
+
+            // 地点が選択されている場合のみ更新
+            if (selectedStationCode) {
+                updateURLInputs();
+                loadCalendarData();
+
+                const edition = selectedStationName ? (
+                  selectedDisplayType === 'shioji-extrema' ? '<small>（すっきり）</small>' : '<small>（詳細）</small>'
+                ) : ''
+                const addBtn = document.getElementById('addCalendarBtn');
+                addBtn.disabled = false;
+                addBtn.innerHTML = `📅 <span>${selectedStationName}</span>${edition}をカレンダーに追加`;
             }
         }
 
@@ -895,11 +1034,18 @@
             const calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridDay',
+                allDaySlot: false,
                 locale: 'ja',
                 headerToolbar: {
                     left: 'prev',
                     center: 'title',
                     right: 'next'
+                },
+                titleFormat: { // 表示のフォーマットを定義
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    weekday: 'short'  // "Tue" のように表示
                 },
                 height: 'auto',
                 events: [],
@@ -915,6 +1061,12 @@
 
             // カレンダー追加ボタンのイベントリスナー
             document.getElementById('addCalendarBtn').addEventListener('click', onAddCalendarClick);
+
+            // 表示方式選択のイベントリスナー
+            const displayTypeRadios = document.querySelectorAll('input[name="displayType"]');
+            displayTypeRadios.forEach(radio => {
+                radio.addEventListener('change', onDisplayTypeChange);
+            });
         });
     </script>
 

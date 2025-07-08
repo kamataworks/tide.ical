@@ -5,6 +5,10 @@
  * choi/{stationCode}.json から潮位データを読み込み、
  * 満ち潮・引き潮の期間を計算してICSファイルを生成する
  *
+ * 生成されるファイル:
+ * - ./build/shioji/{stationCode}.ics: 満ち潮・引き潮の期間イベント
+ * - ./build/shioji-extrema/{stationCode}.ics: 満潮・干潮のピンポイント時刻イベント
+ *
  * タイムゾーンは常にAsia/Tokyoに固定されます
  */
 
@@ -113,6 +117,27 @@ function convertToTidePeriods(events: TideEvent[]): TidePeriod[] {
 }
 
 /**
+ * extremaデータから満潮・干潮のピンポイントイベントを生成する
+ * @param extrema 満潮・干潮の極値データ
+ * @returns ピンポイントイベントの配列
+ */
+function convertExtremaToPointEvents(extrema: TideData['extrema']): TidePeriod[] {
+  return extrema.map(item => {
+    const level = Math.round(item.level);
+    const displayName = item.type === 'high' ? '満潮' : '干潮';
+    const summary = `${displayName} (${level}cm)`;
+
+    return {
+      tideName: summary as any,
+      startDate: item.time,
+      startTime: item.time,
+      endDate: item.time,
+      endTime: item.time,
+    };
+  });
+}
+
+/**
  * 満ち潮・引き潮イベントから表示用の名前を取得する
  * @param event 満ち潮・引き潮イベント
  * @returns 表示用の名前
@@ -170,6 +195,49 @@ async function generateStationICS(stationCode: string, tideData: TideData): Prom
     const fallingCount = tideEvents.filter(e => e.type === 'falling').length;
 
     console.log(`✅ ${stationCode} (${tideData.stationName}): 満ち潮 ${risingCount}回、引き潮 ${fallingCount}回`);
+
+  } catch (error) {
+    console.error(`❌ ${stationCode} (${tideData.stationName}): エラーが発生しました:`, error);
+  }
+}
+
+/**
+ * 単一ステーションの満潮・干潮ピンポイントICSファイルを生成する
+ * @param stationCode ステーションコード
+ * @param tideData 潮位データ
+ */
+async function generateExtremaPointICS(stationCode: string, tideData: TideData): Promise<void> {
+  try {
+    // extremaデータをソート（時刻順）
+    const sortedExtrema = [...tideData.extrema].sort((a, b) =>
+      new Date(a.time).getTime() - new Date(b.time).getTime()
+    );
+
+    if (sortedExtrema.length === 0) {
+      console.warn(`⚠️ ${stationCode} (${tideData.stationName}): 満潮・干潮データが見つかりません`);
+      return;
+    }
+
+    // ピンポイントイベントに変換
+    const pointEvents = convertExtremaToPointEvents(sortedExtrema);
+
+    // ICSファイル内容を生成
+    const calendarName = `${tideData.stationName} 満潮・干潮カレンダー`;
+    const icsContent = generateICSContent(pointEvents, calendarName, `${tideData.stationName} の満潮・干潮時刻`, false);
+
+    // 出力ディレクトリを作成
+    const outputDir = './build/shioji-extrema';
+    await fs.mkdir(outputDir, { recursive: true });
+
+    // ファイルを保存
+    const outputPath = path.join(outputDir, `${stationCode}.ics`);
+    await saveICSFile(icsContent, outputPath);
+
+    // 統計情報を表示
+    const highCount = sortedExtrema.filter(e => e.type === 'high').length;
+    const lowCount = sortedExtrema.filter(e => e.type === 'low').length;
+
+    console.log(`✅ ${stationCode} (${tideData.stationName}): 満潮 ${highCount}回、干潮 ${lowCount}回`);
 
   } catch (error) {
     console.error(`❌ ${stationCode} (${tideData.stationName}): エラーが発生しました:`, error);
@@ -242,8 +310,11 @@ async function main(): Promise<void> {
           tideData.stationName = (tideData.stationName as any).name || 'Unknown Station';
         }
 
-        // ICSファイルを生成
+        // ICSファイルを生成（期間型）
         await generateStationICS(stationCode, tideData);
+
+        // 満潮・干潮ピンポイントICSファイルを生成
+        await generateExtremaPointICS(stationCode, tideData);
 
         // 統計用カウント
         const sortedExtrema = [...tideData.extrema].sort((a, b) =>
@@ -269,8 +340,9 @@ async function main(): Promise<void> {
     console.log(`総イベント数: ${totalRisingEvents + totalFallingEvents}回`);
 
     console.log('\n✅ 満ち潮・引き潮ICSファイルの生成が完了しました！');
-    console.log(`出力ディレクトリ: build/shioji/`);
-    console.log(`生成ファイル数: ${processedCount}件`);
+    console.log(`期間型出力ディレクトリ: build/shioji/`);
+    console.log(`ピンポイント型出力ディレクトリ: build/shioji-extrema/`);
+    console.log(`各ディレクトリの生成ファイル数: ${processedCount}件`);
 
   } catch (error) {
     console.error('❌ エラーが発生しました:', error);
