@@ -77,7 +77,7 @@ function generateICSEvent(tidePeriod: TidePeriod, uid: string, wholeDay = true):
     `DTSTART:${formatICSDateTime(tidePeriod.startDate)}`;
 
   const end = wholeDay ?
-    `DTEND;VALUE=DATE:${formatICSDate(tidePeriod.endDate)}` :
+    `DTEND;VALUE=DATE:${formatICSDate((new Date(tidePeriod.endDate.getTime() + 24 * 60 * 60 * 1000)))}` :
     `DTEND:${formatICSDateTime(tidePeriod.endDate)}`;
 
   const summary = tidePeriod.emoji
