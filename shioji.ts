@@ -207,7 +207,7 @@ async function main(): Promise<void> {
     let processedCount = 0;
     let totalRisingEvents = 0;
     let totalFallingEvents = 0;
-    const stationNameMap: Record<string, string> = {};
+    const stationNameMap: Record<string, { name: string, lat: number, lng: number }> = {};
 
     for (const file of jsonFiles) {
       const stationCode = path.basename(file, '.json');
@@ -218,9 +218,18 @@ async function main(): Promise<void> {
         const fileContent = await fs.readFile(filePath, 'utf-8');
         const tideData: TideData = JSON.parse(fileContent);
 
+        // それから緯度経度は潮位表データから取ってくる
+        // TODO なんか実装が場当たり的で適当なのでそのうち直すべき
+        const choihyo = JSON.parse(await fs.readFile('./choihyo/2026.json', 'utf-8'));
+        const stationInfo = choihyo.find((item: any) => item.stationCode === stationCode);
+
+        stationNameMap[stationCode] = {
         // NOTE: ここ型がおかしいのでそのうち直す
         // @ts-ignore
-        stationNameMap[stationCode] = tideData.stationName.name || '(Unknown Station)';
+          name: tideData.stationName.name || '(Unknown Station)',
+          lat: stationInfo.latitude.degree + stationInfo.latitude.minute / 60,
+          lng: stationInfo.longitude.degree + stationInfo.longitude.minute / 60,
+        };
 
         // 日付文字列をDateオブジェクトに変換
         tideData.extrema = tideData.extrema.map(item => ({

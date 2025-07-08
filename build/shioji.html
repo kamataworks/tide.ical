@@ -622,7 +622,7 @@
             // 地域名でソート
             const sortedEntries = Object.entries(stationData).sort((a, b) => a[1].localeCompare(b[1]));
 
-            sortedEntries.forEach(([code, name]) => {
+            sortedEntries.forEach(([code, { name }]) => {
                 const option = document.createElement('option');
                 option.value = code;
                 option.textContent = name;
