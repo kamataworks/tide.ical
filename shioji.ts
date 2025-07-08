@@ -105,7 +105,9 @@ function convertToTidePeriods(events: TideEvent[]): TidePeriod[] {
     return {
       tideName: tideNameWithLevels as any,
       startDate: event.startTime,
+      startTime: event.startTime,
       endDate: event.endTime,
+      endTime: event.endTime,
     };
   });
 }
@@ -153,7 +155,7 @@ async function generateStationICS(stationCode: string, tideData: TideData): Prom
 
     // ICSファイル内容を生成
     const calendarName = `${tideData.stationName} 満ち潮・引き潮カレンダー`;
-    const icsContent = generateICSContent(tidePeriods, calendarName, `${tideData.stationName} の別の満ち潮・引き潮情報`);
+    const icsContent = generateICSContent(tidePeriods, calendarName, `${tideData.stationName} の別の満ち潮・引き潮情報`, false);
 
     // 出力ディレクトリを作成
     const outputDir = './build/shioji';

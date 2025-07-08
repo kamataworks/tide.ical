@@ -8,7 +8,9 @@ import type { TideName } from './tide-calculator.ts';
 export interface TidePeriod {
   tideName: TideName;
   startDate: Date;
+  startTime?: Date; // 時刻情報はオプション
   endDate: Date;
+  endTime?: Date; // 時刻情報はオプション
   emoji?: string;
 }
 
@@ -66,29 +68,36 @@ function foldICSText(text: string): string {
  * 潮まわり期間からICSイベントを生成する
  * @param tidePeriod 潮まわり期間
  * @param uid イベントのUID
+ * @param wholeDay 終日イベントかどうか（デフォルトはtrue）
  * @returns ICSイベント文字列
  */
-function generateICSEvent(tidePeriod: TidePeriod, uid: string): string {
-  const startDate = formatICSDate(tidePeriod.startDate);
-  const endDate = formatICSDate(new Date(tidePeriod.endDate.getTime() + 24 * 60 * 60 * 1000)); // 終了日の翌日
+function generateICSEvent(tidePeriod: TidePeriod, uid: string, wholeDay = true): string {
+  const start = wholeDay ?
+    `DTSTART;VALUE=DATE:${formatICSDate(tidePeriod.startDate)}` :
+    `DTSTART:${formatICSDateTime(tidePeriod.startDate)}`;
 
-  const isSingleDayUshio = tidePeriod.startDate.getTime() === tidePeriod.endDate.getTime()
+  const end = wholeDay ?
+    `DTEND;VALUE=DATE:${formatICSDate(tidePeriod.endDate)}` :
+    `DTEND:${formatICSDateTime(tidePeriod.endDate)}`;
 
-  const summary = tidePeriod.emoji ? `${tidePeriod.emoji} ${tidePeriod.tideName}` : tidePeriod.tideName;
+  const summary = tidePeriod.emoji
+    ? `${tidePeriod.emoji} ${tidePeriod.tideName}`
+    : tidePeriod.tideName;
 
   const event = [
     'BEGIN:VEVENT',
     `UID:${uid}`,
-    `DTSTART;VALUE=DATE:${startDate}`,
-    isSingleDayUshio ? false : `DTEND;VALUE=DATE:${endDate}`, // NOTE: 短日イベントの時は省略できる
+    start,
+    end,
     foldICSText(`SUMMARY:${summary}`),
     'END:VEVENT'
   ]
-    .filter(x => !!x)
+    .filter(Boolean)
     .join('\r\n');
 
   return event;
 }
+
 
 function encodeUniqueId(yyyymmdd: string) {
   // YYYYMMDD → 日付オブジェクト
@@ -117,6 +126,7 @@ export function generateICSContent(
   tidePeriods: TidePeriod[],
   calendarName: string = '潮まわりカレンダー',
   caldesc: string,
+  wholeDay: boolean = true,
 ): string {
   // ICSヘッダー
   const header = [
@@ -133,8 +143,8 @@ export function generateICSContent(
   // イベント生成
   const events = tidePeriods.map((period) => {
     const yyyymmdd = formatICSDate(period.startDate);
-    const uid = encodeUniqueId(yyyymmdd);
-    return generateICSEvent(period, uid);
+    const uid = wholeDay ? encodeUniqueId(yyyymmdd) : `${encodeUniqueId(yyyymmdd)}-${period.startDate.getHours()}${period.startDate.getMinutes()}`;
+    return generateICSEvent(period, uid, wholeDay);
   }).join('\r\n');
 
   // ICSフッター

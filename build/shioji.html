@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引き潮・満ち潮カレンダー（テスト版） - tide.ical</title>
+    <meta name="description" content="日本全国の引き潮・満ち潮情報を地域別にiCalendar形式で配信。GoogleカレンダーやiPhoneのカレンダーに自動追加できます。釣り・磯遊び・潮干狩りの計画に便利。">
+    <meta name="keywords" content="引き潮,満ち潮,潮汐,カレンダー,干潮,満潮,釣り,潮干狩り,ical,ics,日本,潮見表" />
+    <meta property="og:title" content="引き潮・満ち潮カレンダー（テスト版）｜地域別潮汐情報 - tide.ical" />
+    <meta property="og:description" content="日本全国の引き潮・満ち潮情報を地域別にカレンダーに自動で追加！釣りや潮干狩りに便利なiCal対応の潮汐カレンダーサービスです。" />
+    <meta property="og:url" content="https://tide.ical.kamataworks.com/shioji.html" />
+    <meta property="og:image" content="https://tide.ical.kamataworks.com/shioji_ogp.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="引き潮・満ち潮カレンダー - tide.ical" />
+    <meta property="og:locale" content="ja_JP" />
+    <!-- Twitter Card Tag -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@kamataryo_" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .station-selector {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f0fdf4;
+            border-radius: 12px;
+            border: 2px solid #bbf7d0;
+        }
+
+        .station-selector h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #15803d;
+        }
+
+        .station-selector p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: #4b5563;
+        }
+
+        .selector-group {
+            margin-bottom: 25px;
+        }
+
+        .selector-group select {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            color: #1f2937;
+            min-width: 250px;
+            cursor: pointer;
+        }
+
+        .selector-group select:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .big-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(21, 128, 61, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .big-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(21, 128, 61, 0.4);
+        }
+
+        .big-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .explanation {
+            background: #fefce8;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .explanation h3 {
+            color: #a16207;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .explanation p {
+            margin-bottom: 10px;
+        }
+
+        .explanation strong {
+            color: #92400e;
+        }
+
+        .advanced-options {
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .advanced-options summary {
+            padding: 20px;
+            cursor: pointer;
+            background: #f9fafb;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #4b5563;
+            transition: background 0.3s ease;
+        }
+
+        .advanced-options summary:hover {
+            background: #f3f4f6;
+        }
+
+        .advanced-options[open] summary {
+            border-bottom: 1px solid #d1d5db;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .manual-methods {
+            padding: 25px;
+        }
+
+        .method {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .method h4 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .method p {
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .url-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .copy-btn, .download-btn {
+            padding: 12px 20px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .copy-btn:hover, .download-btn:hover {
+            background: #16a34a;
+        }
+
+        .copy-btn.copied {
+            background: #059669;
+        }
+
+        .troubleshooting {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .troubleshooting h4 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .troubleshooting ul {
+            padding-left: 20px;
+        }
+
+        .troubleshooting li {
+            margin-bottom: 8px;
+        }
+
+        .troubleshooting strong {
+            color: #e65100;
+        }
+
+        .info-section {
+            background: #f0fdf4;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #22c55e;
+        }
+
+        .info-section h3 {
+            color: #15803d;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-section ul,
+        .advanced-options ul {
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #1f2937;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .url-input-group {
+                flex-direction: column;
+            }
+
+            .url-input-group input {
+                margin-bottom: 10px;
+            }
+
+            .selector-group select {
+                min-width: 200px;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #22c55e;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* カレンダープレビュー用のスタイル */
+        .calendar-preview {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .calendar-preview h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #15803d;
+            text-align: center;
+        }
+
+        .calendar-preview p {
+            font-size: 1rem;
+            margin-bottom: 25px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        #calendar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* FullCalendar のカスタマイズ */
+        .fc-theme-standard .fc-scrollgrid {
+            border: none;
+        }
+
+        .fc-theme-standard td, .fc-theme-standard th {
+            border-color: #e5e7eb;
+        }
+
+        .fc-daygrid-event {
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 600px) {
+            .calendar-preview {
+                padding: 20px;
+            }
+            .fc-daygrid-day-number {
+              font-size: 14px;
+            }
+            .fc-toolbar-chunk {
+                display: flex;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌊 引き潮・満ち潮カレンダー<small>（テスト版）</small></h1>
+            <p>日本全国の引き潮・満ち潮情報を地域別にカレンダーアプリで確認できます</p>
+        </header>
+
+        <main class="content">
+            <!-- 地域選択 -->
+            <div class="station-selector">
+                <h2>📍 観測地点を選択</h2>
+                <p>お住まいの地域や関心のある地域の観測地点を選択してください</p>
+                <div class="selector-group">
+                    <select id="stationSelect">
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+                <button id="addCalendarBtn" class="big-button" disabled>
+                    📅 カレンダーに追加
+                </button>
+            </div>
+
+            <!-- カレンダープレビュー -->
+            <div class="calendar-preview">
+                <div id="calendar"></div>
+            </div>
+
+            <!-- 説明 -->
+            <div class="explanation">
+                <h3>💡 これは何？</h3>
+                <p>
+                    引き潮・満ち潮の時刻情報を、普段お使いのカレンダーアプリ（iPhone / Android / Google カレンダー など）で確認できるようになります。無料で利用可能です。現在2024年から2026年までのデータが利用可能です。
+                </p>
+            </div>
+
+            <!-- 詳細オプション -->
+            <details class="advanced-options">
+                <summary>うまくいかない場合・その他の方法</summary>
+                <div class="manual-methods">
+                    <p>上のボタンでうまくいかない場合は、以下の方法をお試しください:</p>
+
+                    <div class="method">
+                        <h4>方法1: アドレスをコピーして手動追加</h4>
+                        <p>Google カレンダー等の「カレンダーを追加」機能で以下のアドレスを入力:</p>
+                        <div class="url-input-group">
+                            <input type="text" readonly id="webcal-url">
+                            <button onclick="copyToClipboard('webcal-url')" class="copy-btn">📋 コピー</button>
+                        </div>
+                    </div>
+
+                    <div class="method">
+                        <h4>方法2: ファイルをダウンロード</h4>
+                        <p>ファイルをダウンロードしてカレンダーアプリで開く:</p>
+                        <div class="url-input-group">
+                            <input type="text" readonly id="https-url">
+                            <button onclick="copyToClipboard('https-url')" class="copy-btn">📋 コピー</button>
+                        </div>
+                        <a href="#" id="download-link" class="download-btn">📥 ダウンロード</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- FAQ セクション -->
+            <details open class="advanced-options">
+                <summary>よくある質問（FAQ）</summary>
+                <div class="manual-methods">
+
+                    <div class="method">
+                      <h4>🎯 こんな人におすすめ</h4>
+                      <ul>
+                        <li>釣りや潮干狩りの予定を立てたい方</li>
+                        <li>海水浴・SUP・シーカヤックなど、海のレジャーを楽しむ方</li>
+                      </ul>
+                    </div>
+
+                    <div class="method">
+                      <h4>⚠️ テスト版について</h4>
+                      <p>このサービスはテスト版のため、将来的に機能やURLが変更される可能性があります。</p>
+                      <p>現在は2026年までの潮汐データをサポートしていますが、2027年以降のサポートについては現在検討中です。</p>
+                    </div>
+
+                    <div class="method">
+                      <h4>🌊 引き潮・満ち潮の時刻について</h4>
+                      <p>このカレンダーでは各観測地点の詳細な引き潮・満ち潮時刻を表示しています。気象庁の潮汐データに基づいて算出されています。</p>
+                    </div>
+
+                    <div class="method">
+                        <h4>⚠️ このサービスについて知っておくべきこと</h4>
+                        <p>個人が開発・運営するオープンソースプロジェクトです。潮汐情報は参考程度にご利用ください。</p>
+                        <p>漁業や海洋活動など重要な用途では、気象庁や海上保安庁などの公的機関が発表する情報をご確認ください。</p>
+                        <p><strong>免責事項</strong>:<br />データの正確性や利用による損害について責任は負いかねます。また予告なくサービスを停止する場合があります。</p>
+                    </div>
+
+                    <div class="method">
+                        <h4>🤝 このプロジェクトを応援したい・改善提案がある</h4>
+                        <p>このツールが役に立ったと感じていただけたら、ぜひ<a href="https://coff.ee/kamataworks" target="_blank" rel="noopener">☕ コーヒーを一杯ごちそうしてください</a>。もちろん、気が向いたときで大丈夫ですよ。</p>
+                        <p><strong>オープンな貢献</strong>:<br />バグ報告、機能追加提案、コード改善などを歓迎します。まずは GitHub Issues からどうぞ。</p>
+                        <p><a href="https://github.com/kamataworks/tide.ical/issues/new/choose" target="_blank" rel="noopener">GitHub Issues を開く</a></p>
+                    </div>
+
+                    <div class="method">
+                        <h4>📱 カレンダーに表示されない時は？</h4>
+                        <p>カレンダーアプリを一度閉じて、再度開いてみてください。アプリの同期設定を確認してください。</p>
+                        <p>それでも表示されない場合は上記の「その他の方法」をお試しください。</p>
+                    </div>
+
+                    <div class="method">
+                        <h4>💼 企業・組織での利用や専用機能の開発について</h4>
+                        <p>社内システムへの組み込みや専用機能の開発をご検討の場合は、下記よりご相談いただけます。企業向けサポートやライセンスについてもご相談いただけます。</p>
+                        <p><a href="https://www.kamataworks.com/contact" target="_blank" rel="noopener">カスタマイズや受託開発のご相談</a></p>
+                    </div>
+
+                </div>
+            </details>
+
+        </main>
+
+        <!-- フッター -->
+        <footer class="footer">
+            <p>制作: <a href="https://www.kamataworks.com" target="_blank" rel="noopener" style="color: #ffffff; text-decoration: underline;">鎌田製作所（カマタワークス）</a></p>
+            <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.8;">
+                オープンソースプロジェクト |
+                <a href="https://github.com/kamataworks/tide.ical" target="_blank" rel="noopener" style="color: #ffffff;">GitHub</a> |
+                <a href="https://www.kamataworks.com/contact" target="_blank" rel="noopener" style="color: #ffffff;">企業向けご相談</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- トースト通知 -->
+    <div id="toast" class="toast">
+        📋 URLをコピーしました！
+    </div>
+
+    <!-- FullCalendar JavaScript -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js'></script>
+    <script>
+        let calendar;
+        let stationData = {};
+        let selectedStationCode = '';
+        let selectedStationName = '';
+
+        // ホスト判定関数
+        function getBaseUrl() {
+            const hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.')) {
+                return './';
+            } else {
+                return 'https://content.tide.ical.kamataworks.com';
+            }
+        }
+
+        // ICSファイルをパースする関数
+        function parseICS(icsText) {
+            const events = [];
+            const lines = icsText.split('\n');
+            let currentEvent = null;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line === 'BEGIN:VEVENT') {
+                    currentEvent = {};
+                } else if (line === 'END:VEVENT' && currentEvent) {
+                    if (currentEvent.title && currentEvent.start) {
+                        events.push({
+                            title: currentEvent.title,
+                            start: currentEvent.start,
+                            end: currentEvent.end,
+                            allDay: false
+                        });
+                    }
+                    currentEvent = null;
+                } else if (currentEvent) {
+                    if (line.startsWith('SUMMARY:')) {
+                        currentEvent.title = line.substring(8);
+                    } else if (line.startsWith('DTSTART:')) {
+                        const dateStr = line.substring(8);
+                        currentEvent.start = formatDateTime(dateStr);
+                    } else if (line.startsWith('DTEND:')) {
+                        const dateStr = line.substring(6);
+                        currentEvent.end = formatDateTime(dateStr);
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        // YYYYMMDDTHHMMSS形式をISO形式に変換
+        function formatDateTime(dateStr) {
+            if (dateStr.length >= 15) {
+                return dateStr.substring(0, 4) + '-' +
+                       dateStr.substring(4, 6) + '-' +
+                       dateStr.substring(6, 8) + 'T' +
+                       dateStr.substring(9, 11) + ':' +
+                       dateStr.substring(11, 13) + ':' +
+                       dateStr.substring(13, 15);
+            }
+            return dateStr;
+        }
+
+        // 地域データを読み込む
+        async function loadStationData() {
+            try {
+                const baseUrl = getBaseUrl();
+                const response = await fetch(`./shioji.json`);
+                if (!response.ok) {
+                    throw new Error('地域データの読み込みに失敗しました');
+                }
+                stationData = await response.json();
+                populateStationSelect();
+            } catch (error) {
+                console.error('Error loading station data:', error);
+            }
+        }
+
+        // セレクトボックスに地域を追加
+        function populateStationSelect() {
+            const select = document.getElementById('stationSelect');
+
+            // 地域名でソート
+            const sortedEntries = Object.entries(stationData).sort((a, b) => a[1].localeCompare(b[1]));
+
+            sortedEntries.forEach(([code, name]) => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+
+        // 地域選択時の処理
+        function onStationChange() {
+            const select = document.getElementById('stationSelect');
+            const addBtn = document.getElementById('addCalendarBtn');
+
+            selectedStationCode = select.value;
+            selectedStationName = stationData[selectedStationCode] || '';
+
+            if (selectedStationCode) {
+                addBtn.disabled = false;
+                addBtn.textContent = `📅 ${selectedStationName} をカレンダーに追加`;
+                updateURLInputs();
+                loadCalendarData();
+            } else {
+                addBtn.disabled = true;
+                addBtn.textContent = '📅 カレンダーに追加';
+                clearURLInputs();
+                clearCalendar();
+            }
+        }
+
+        // URL入力欄を更新
+        function updateURLInputs() {
+            const baseUrl = getBaseUrl();
+            const webcalUrl = `webcal://${baseUrl.replace('https://', '').replace('http://', '')}/shioji/${selectedStationCode}.ics`;
+            const httpsUrl = `${baseUrl}/shioji/${selectedStationCode}.ics`;
+
+            document.getElementById('webcal-url').value = webcalUrl;
+            document.getElementById('https-url').value = httpsUrl;
+            document.getElementById('download-link').href = httpsUrl;
+        }
+
+        // URL入力欄をクリア
+        function clearURLInputs() {
+            document.getElementById('webcal-url').value = '';
+            document.getElementById('https-url').value = '';
+            document.getElementById('download-link').href = '#';
+        }
+
+        // カレンダーデータを読み込む
+        async function loadCalendarData() {
+            if (!selectedStationCode) return;
+
+            try {
+                const baseUrl = getBaseUrl();
+                const response = await fetch(`${baseUrl}/shioji/${selectedStationCode}.ics`);
+                if (!response.ok) {
+                    throw new Error('カレンダーデータの読み込みに失敗しました');
+                }
+                const icsText = await response.text();
+                const events = parseICS(icsText);
+                calendar.removeAllEvents();
+                calendar.addEventSource(events);
+            } catch (error) {
+                console.error('Error loading calendar data:', error);
+                calendar.removeAllEvents();
+            }
+        }
+
+        // カレンダーをクリア
+        function clearCalendar() {
+            if (calendar) {
+                calendar.removeAllEvents();
+            }
+        }
+
+        // カレンダーボタンクリック時の処理
+        function onAddCalendarClick() {
+            if (selectedStationCode) {
+                const baseUrl = getBaseUrl();
+                const webcalUrl = `webcal://${baseUrl.replace('https://', '').replace('http://', '')}/shioji/${selectedStationCode}.ics`;
+                window.location.href = webcalUrl;
+            }
+        }
+
+        // カレンダーを初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ja',
+                headerToolbar: {
+                    left: 'prev',
+                    center: 'title',
+                    right: 'next'
+                },
+                height: 'auto',
+                events: [],
+                eventDisplay: 'block',
+                dayMaxEvents: 3,
+                moreLinkClick: 'popover'
+            });
+
+            calendar.render();
+
+            // 地域データを読み込み
+            loadStationData();
+
+            // セレクトボックスのイベントリスナー
+            document.getElementById('stationSelect').addEventListener('change', onStationChange);
+
+            // カレンダー追加ボタンのイベントリスナー
+            document.getElementById('addCalendarBtn').addEventListener('click', onAddCalendarClick);
+        });
+    </script>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const button = element.nextElementSibling;
+
+            // モダンブラウザでのコピー
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(element.value).then(() => {
+                    showCopySuccess(button);
+                }).catch(() => {
+                    fallbackCopy(element, button);
+                });
+            } else {
+                // フォールバック
+                fallbackCopy(element, button);
+            }
+        }
+
+        function fallbackCopy(element, button) {
+            element.select();
+            element.setSelectionRange(0, 99999); // モバイル対応
+
+            try {
+                document.execCommand('copy');
+                showCopySuccess(button);
+            } catch (err) {
+                alert('コピーに失敗しました。手動でURLを選択してコピーしてください。');
+            }
+        }
+
+        function showCopySuccess(button) {
+            // ボタンの表示を変更
+            const originalText = button.textContent;
+            button.textContent = '✅ コピー完了';
+            button.classList.add('copied');
+
+            // トースト表示
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+
+            // 2秒後に元に戻す
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

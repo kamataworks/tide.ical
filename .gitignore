@@ -179,6 +179,9 @@ choihyo
 build
 # ただしindex.htmlは除外しない
 !build/index.html
+!build/shioji.html
+!build/shioji.json
 !build/CNAME
 !build/ogp.png
+!build/shioji_ogp.png
 choi/*
