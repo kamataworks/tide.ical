@@ -397,6 +397,70 @@
                 justify-content: center;
             }
         }
+
+        /* 地図用のスタイル */
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 2px solid #d1d5db;
+        }
+
+        .maplibregl-popup {
+            max-width: 200px;
+        }
+
+        .maplibregl-popup-content {
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .station-marker {
+            background-color: #22c55e;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .station-marker:hover {
+            background-color: #16a34a;
+            transform: scale(1.2);
+        }
+
+        .station-marker.selected {
+            background-color: #dc2626;
+            border-color: #ffffff;
+            width: 16px;
+            height: 16px;
+            transform: scale(1.1);
+        }
+
+        .station-label {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #1f2937;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            #map {
+                height: 300px;
+            }
+
+            .station-label {
+                font-size: 10px;
+                padding: 1px 4px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -410,12 +474,8 @@
             <!-- 地域選択 -->
             <div class="station-selector">
                 <h2>📍 観測地点を選択</h2>
-                <p>お住まいの地域や関心のある地域の観測地点を選択してください</p>
-                <div class="selector-group">
-                    <select id="stationSelect">
-                        <option value="">選択してください</option>
-                    </select>
-                </div>
+                <p>地図上の観測地点をクリックして選択してください</p>
+                <div id="map"></div>
                 <button id="addCalendarBtn" class="big-button" disabled>
                     📅 カレンダーに追加
                 </button>
@@ -532,13 +592,19 @@
         📋 URLをコピーしました！
     </div>
 
+    <!-- MapLibre GL JS -->
+    <script src='https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css' rel='stylesheet' />
+
     <!-- FullCalendar JavaScript -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js'></script>
     <script>
         let calendar;
+        let map;
         let stationData = {};
         let selectedStationCode = '';
         let selectedStationName = '';
+        let stationMarkers = {};
 
         // ホスト判定関数
         function getBaseUrl() {
@@ -603,52 +669,169 @@
         // 地域データを読み込む
         async function loadStationData() {
             try {
-                const baseUrl = getBaseUrl();
-                const response = await fetch(`./shioji.json`);
+                const response = await fetch('./shioji.json');
                 if (!response.ok) {
                     throw new Error('地域データの読み込みに失敗しました');
                 }
                 stationData = await response.json();
-                populateStationSelect();
+                initializeMap();
             } catch (error) {
                 console.error('Error loading station data:', error);
             }
         }
 
-        // セレクトボックスに地域を追加
-        function populateStationSelect() {
-            const select = document.getElementById('stationSelect');
+        // 地図を初期化
+        function initializeMap() {
+            map = new maplibregl.Map({
+                container: 'map',
+                style: {
+                    version: 8,
+                    glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+                    sources: {
+                        'gsi-blank': {
+                            type: 'raster',
+                            tiles: ['https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png'],
+                            tileSize: 256,
+                            attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>'
+                        },
+                        'stations': {
+                            type: 'geojson',
+                            data: {
+                                type: 'FeatureCollection',
+                                features: Object.entries(stationData).map(([code, { name, lat, lng }]) => ({
+                                    type: 'Feature',
+                                    properties: { code, name },
+                                    geometry: {
+                                        type: 'Point',
+                                        coordinates: [lng, lat]
+                                    }
+                                }))
+                            }
+                        }
+                    },
+                    layers: [
+                      {
+                          id: 'gsi-blank',
+                          type: 'raster',
+                          source: 'gsi-blank'
+                      },
+   // 未選択の station マーカー
+  {
+    id: 'station-markers',
+    type: 'circle',
+    source: 'stations',
+    filter: ['!=', ['get', 'selected'], true],
+    paint: {
+      'circle-radius': 8,
+      'circle-color': '#22c55e',
+      'circle-stroke-width': 3,
+      'circle-stroke-color': '#ffffff'
+    }
+  },
 
-            // 地域名でソート
-            const sortedEntries = Object.entries(stationData).sort((a, b) => a[1].localeCompare(b[1]));
+  // 未選択のラベル
+  {
+    id: 'station-labels',
+    type: 'symbol',
+    source: 'stations',
+    filter: ['!=', ['get', 'selected'], true],
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-font': ['Noto Sans JP Regular'],
+      'text-size': 16,
+      'text-offset': [0, 1.2],
+    },
+    paint: {
+      'text-halo-color': 'white',
+      'text-halo-width': 2,
+    }
+  },
 
-            sortedEntries.forEach(([code, { name }]) => {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = name;
-                select.appendChild(option);
+  // 選択済みの station マーカー（強調表示）
+  {
+    id: 'station-markers-selected',
+    type: 'circle',
+    source: 'stations',
+    filter: ['==', ['get', 'selected'], true],
+    paint: {
+      'circle-radius': 10,
+      'circle-color': '#15803d', // オレンジ系
+      'circle-stroke-width': 5,
+      'circle-stroke-color': '#000000'
+    }
+  },
+
+  // 選択済みのラベル（色変更・サイズUPなど）
+  {
+    id: 'station-labels-selected',
+    type: 'symbol',
+    source: 'stations',
+    filter: ['==', ['get', 'selected'], true],
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-font': ['Noto Sans JP Bold'],
+      'text-size': 18,
+      'text-offset': [0, 1.2],
+    },
+    paint: {
+      'text-color': 'white',
+      'text-halo-color': '#000000',
+      'text-halo-width': 3,
+    }
+  }
+
+                    ]
+                },
+                center: [138.0, 36.0], // 日本の中心付近
+                zoom: 5
             });
+
+            map.on('click', async (e) => {
+              const features = map.queryRenderedFeatures(e.point, {
+                layers: ['station-markers', 'station-labels']
+              })
+              if(features.length === 0) {
+                return
+              } else {
+                const feature = features[0]
+                const { code } = feature.properties
+                selectStation(code)
+                const currentStationSource = map.getSource('stations')
+                const nextFeatureCollection = await currentStationSource.getData()
+                nextFeatureCollection.features = nextFeatureCollection.features.map(feature => {
+                  return {
+                    ...feature,
+                    properties: { ...feature.properties, selected: feature.properties.code === code }
+                  }
+                })
+                currentStationSource.setData(nextFeatureCollection)
+              }
+            })
+
         }
 
-        // 地域選択時の処理
-        function onStationChange() {
-            const select = document.getElementById('stationSelect');
-            const addBtn = document.getElementById('addCalendarBtn');
-
-            selectedStationCode = select.value;
-            selectedStationName = stationData[selectedStationCode] || '';
-
-            if (selectedStationCode) {
-                addBtn.disabled = false;
-                addBtn.textContent = `📅 ${selectedStationName} をカレンダーに追加`;
-                updateURLInputs();
-                loadCalendarData();
-            } else {
-                addBtn.disabled = true;
-                addBtn.textContent = '📅 カレンダーに追加';
-                clearURLInputs();
-                clearCalendar();
+        // 観測地点を選択
+        function selectStation(stationCode) {
+            // 前の選択をクリア
+            if (selectedStationCode && stationMarkers[selectedStationCode]) {
+                stationMarkers[selectedStationCode].element.classList.remove('selected');
             }
+
+            selectedStationCode = stationCode;
+            selectedStationName = stationData[stationCode].name;
+
+            // 新しい選択をハイライト
+            if (stationMarkers[stationCode]) {
+                stationMarkers[stationCode].element.classList.add('selected');
+            }
+
+            // ボタンとURL入力欄を更新
+            const addBtn = document.getElementById('addCalendarBtn');
+            addBtn.disabled = false;
+            addBtn.textContent = `📅 ${selectedStationName} をカレンダーに追加`;
+
+            updateURLInputs();
+            loadCalendarData();
         }
 
         // URL入力欄を更新
@@ -705,10 +888,10 @@
             }
         }
 
-        // カレンダーを初期化
+        // 初期化
         document.addEventListener('DOMContentLoaded', function() {
+            // カレンダーを初期化
             const calendarEl = document.getElementById('calendar');
-
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 locale: 'ja',
@@ -726,11 +909,8 @@
 
             calendar.render();
 
-            // 地域データを読み込み
+            // 地域データを読み込み（地図も初期化される）
             loadStationData();
-
-            // セレクトボックスのイベントリスナー
-            document.getElementById('stationSelect').addEventListener('change', onStationChange);
 
             // カレンダー追加ボタンのイベントリスナー
             document.getElementById('addCalendarBtn').addEventListener('click', onAddCalendarClick);
