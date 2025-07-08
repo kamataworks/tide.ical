@@ -372,6 +372,11 @@
         }
 
         /* FullCalendar のカスタマイズ */
+        @media (max-width: 600px) {
+          .fc-toolbar-title {
+            font-size: 20px !important;
+          }
+        }
         .fc-theme-standard .fc-scrollgrid {
             border: none;
         }
@@ -581,12 +586,12 @@
                         <label class="radio-label">
                             <input type="radio" name="displayType" value="shioji-extrema" checked>
                             <span class="radio-custom"></span>
-                            時刻のみ表示（すっきり）
+                            時刻のみ（すっきり）
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="displayType" value="shioji">
                             <span class="radio-custom"></span>
-                            時間の範囲を表示（詳細）
+                            時間の範囲（詳細）
                         </label>
                     </div>
                 </div>
@@ -669,7 +674,7 @@
 
                     <div class="method">
                         <h4>🤝 このプロジェクトを応援したい・改善提案がある</h4>
-                        <p>このツールが役に立ったと感じていただけたら、ぜひ<a href="https://coff.ee/kamataworks" target="_blank" rel="noopener">☕ コーヒーを一杯ごちそうしてください</a>。もちろん、気が向いたときで大丈夫ですよ。</p>
+                        <p>このツールが役に立ったと感じていただけたら、ぜひ<a href="https://coff.ee/kamataworks" target="_blank" rel="noopener">☕ コーヒーを一杯ごちそうしてください</a>。もちろん、気が向いたときで大丈夫です。</p>
                         <p><strong>オープンな貢献</strong>:<br />バグ報告、機能追加提案、コード改善などを歓迎します。まずは GitHub Issues からどうぞ。</p>
                         <p><a href="https://github.com/kamataworks/tide.ical/issues/new/choose" target="_blank" rel="noopener">GitHub Issues を開く</a></p>
                     </div>
@@ -807,7 +812,7 @@
                     sources: {
                         'gsi-blank': {
                             type: 'raster',
-                            tiles: ['https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png'],
+                            tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'],
                             tileSize: 256,
                             attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>'
                         },
@@ -842,7 +847,7 @@
       'circle-radius': 8,
       'circle-color': '#22c55e',
       'circle-stroke-width': 3,
-      'circle-stroke-color': '#ffffff'
+      'circle-stroke-color': 'white'
     }
   },
 
@@ -856,10 +861,13 @@
       'text-field': ['get', 'name'],
       'text-font': ['Noto Sans JP Regular'],
       'text-size': 16,
-      'text-offset': [0, 1.2],
+      'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+      'text-radial-offset': 0.5,
+      'text-justify': 'auto',
+      'text-allow-overlap': false
     },
     paint: {
-      'text-halo-color': 'white',
+      'text-halo-color': 'lightsteelblue',
       'text-halo-width': 2,
     }
   },
@@ -874,7 +882,7 @@
       'circle-radius': 10,
       'circle-color': '#15803d', // オレンジ系
       'circle-stroke-width': 5,
-      'circle-stroke-color': '#000000'
+      'circle-stroke-color': 'white'
     }
   },
 
@@ -887,12 +895,15 @@
     layout: {
       'text-field': ['get', 'name'],
       'text-font': ['Noto Sans JP Bold'],
-      'text-size': 18,
-      'text-offset': [0, 1.2],
+      'text-size': 20,
+      'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+      'text-radial-offset': 1.0,
+      'text-justify': 'auto',
+      'text-allow-overlap': false
     },
     paint: {
       'text-color': 'white',
-      'text-halo-color': '#000000',
+      'text-halo-color': 'black',
       'text-halo-width': 3,
     }
   }
@@ -1040,12 +1051,6 @@
                     left: 'prev',
                     center: 'title',
                     right: 'next'
-                },
-                titleFormat: { // 表示のフォーマットを定義
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    weekday: 'short'  // "Tue" のように表示
                 },
                 height: 'auto',
                 events: [],
