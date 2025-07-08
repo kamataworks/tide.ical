@@ -473,8 +473,8 @@
         <main class="content">
             <!-- 地域選択 -->
             <div class="station-selector">
-                <h2>📍 観測地点を選択</h2>
-                <p>地図上の観測地点をクリックして選択してください</p>
+                <h2>📍 表示地点を選択</h2>
+                <p>地図上の表示地点をクリックして選択してください</p>
                 <div id="map"></div>
                 <button id="addCalendarBtn" class="big-button" disabled>
                     📅 カレンダーに追加
@@ -542,7 +542,7 @@
 
                     <div class="method">
                       <h4>🌊 引き潮・満ち潮の時刻について</h4>
-                      <p>このカレンダーでは各観測地点の詳細な引き潮・満ち潮時刻を表示しています。気象庁の潮汐データに基づいて算出されています。</p>
+                      <p>このカレンダーでは日本各点の詳細な引き潮・満ち潮時刻を表示しています。気象庁の潮汐データに基づいて算出されています。</p>
                     </div>
 
                     <div class="method">
@@ -811,7 +811,7 @@
 
         }
 
-        // 観測地点を選択
+        // 表示地点を選択
         function selectStation(stationCode) {
             // 前の選択をクリア
             if (selectedStationCode && stationMarkers[selectedStationCode]) {
