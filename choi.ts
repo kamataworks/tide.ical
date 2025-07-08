@@ -38,7 +38,7 @@ function parseDate(dateStr: string): Date {
  * 出力ファイルパスを生成
  */
 function generateOutputPath(stationCode: string, startDate: string, endDate: string): string {
-  return `./build/choi/${stationCode}${startDate}-${endDate}.json`;
+  return `./build/choi/${stationCode}-${startDate}-${endDate}.json`;
 }
 
 /**

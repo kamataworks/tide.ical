@@ -37,7 +37,7 @@ export interface TideResult {
 const ANGULAR_VELOCITIES = {
   M2: 28.9841042, // 主太陰半日周潮
   S2: 30.0000000, // 主太陽半日周潮
-  K1: 15.0410686, // 太陰太陽日周潮
+  K1: 15.0410686, // 日月合成日周潮
   O1: 13.9430356, // 主太陰日周潮
 } as const;
 
@@ -50,10 +50,9 @@ function degreesToRadians(degrees: number): number {
 
 /**
  * 基準時からの経過時間を計算（時間単位）
- * 基準時: 2000年1月1日 00:00:00 UTC
  */
 function getHoursSinceEpoch(date: Date): number {
-  const epoch = new Date('2000-01-01T00:00:00Z');
+  const epoch = new Date('1950-01-01T09:00:00.000Z');
   const diffMs = date.getTime() - epoch.getTime();
   return diffMs / (1000 * 60 * 60); // ミリ秒を時間に変換
 }
@@ -66,15 +65,14 @@ export function calculateTideLevel(time: Date, harmonics: HarmonicConstants): nu
 
   const tideLevel = harmonics.values.reduce((tideLevel, harmonic) => {
     const velocity = ANGULAR_VELOCITIES[harmonic.type];
-    const angular = t * velocity * 2 * Math.PI / 360;
-    return tideLevel + harmonic.amplitude * Math.cos(angular + degreesToRadians(harmonic.phase))
+    return tideLevel + harmonic.amplitude * Math.cos(degreesToRadians(t * velocity + harmonic.phase))
   }, harmonics.baseLevel)
 
   return tideLevel
 }
 
 /**
- * 指定期間の潮位データを1分間隔で生成
+ * 指定期間の潮位データを1時間間隔で生成
  */
 export function generateTideData(
   startDate: Date,
@@ -104,7 +102,7 @@ export function generateTideData(
     });
 
     // 1分進める
-    current.setMinutes(current.getMinutes() + 1);
+    current.setHours(current.getHours() + 1);
   }
 
   return {
