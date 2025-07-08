@@ -9,7 +9,7 @@ export interface TidePeriod {
   tideName: TideName;
   startDate: Date;
   endDate: Date;
-  emoji: string;
+  emoji?: string;
 }
 
 /**
@@ -74,7 +74,7 @@ function generateICSEvent(tidePeriod: TidePeriod, uid: string): string {
 
   const isSingleDayUshio = tidePeriod.startDate.getTime() === tidePeriod.endDate.getTime()
 
-  const summary = `${tidePeriod.emoji} ${tidePeriod.tideName}`;
+  const summary = tidePeriod.emoji ? `${tidePeriod.emoji} ${tidePeriod.tideName}` : tidePeriod.tideName;
 
   const event = [
     'BEGIN:VEVENT',
@@ -115,7 +115,8 @@ function encodeUniqueId(yyyymmdd: string) {
  */
 export function generateICSContent(
   tidePeriods: TidePeriod[],
-  calendarName: string = '潮まわりカレンダー'
+  calendarName: string = '潮まわりカレンダー',
+  caldesc: string,
 ): string {
   // ICSヘッダー
   const header = [
@@ -126,7 +127,7 @@ export function generateICSContent(
     'METHOD:PUBLISH',
     foldICSText(`X-WR-CALNAME:${calendarName}`),
     'X-WR-TIMEZONE:Asia/Tokyo',
-    'X-WR-CALDESC:日本の潮まわり情報（大潮・中潮・小潮・長潮・若潮）'
+    `X-WR-CALDESC:${caldesc}`
   ].join('\r\n');
 
   // イベント生成

@@ -181,3 +181,4 @@ build
 !build/index.html
 !build/CNAME
 !build/ogp.png
+choi/*

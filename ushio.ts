@@ -87,7 +87,7 @@ async function main(): Promise<void> {
 
     // ICSファイルを生成
     console.log('\n📅 ICSファイルを生成中...');
-    const icsContent = generateICSContent(tidePeriods, '日本の潮まわりカレンダー');
+    const icsContent = generateICSContent(tidePeriods, '日本の潮まわりカレンダー', ' 日本の潮まわり情報（大潮・中潮・小潮・長潮・若潮）');
 
     // ファイルを保存
     const outputPath = './build/ushio.ics';
