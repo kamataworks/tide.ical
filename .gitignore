@@ -183,5 +183,7 @@ build
 !build/shioji.json
 !build/CNAME
 !build/ogp.png
+!build/icon.png
 !build/shioji_ogp.png
+!build/shioji_icon.png
 choi/*
