@@ -184,6 +184,8 @@ build
 !build/CNAME
 !build/ogp.png
 !build/icon.png
+!build/icon180x180.png
 !build/shioji_ogp.png
 !build/shioji_icon.png
+!build/shioji_icon180x180.png
 choi/*
