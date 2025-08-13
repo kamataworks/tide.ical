@@ -779,15 +779,21 @@
             return events;
         }
 
-        // YYYYMMDDTHHMMSS形式をISO形式に変換
+        // YYYYMMDDTHHMMSSZ形式をISO形式に変換（UTC timezone保持）
         function formatDateTime(dateStr) {
             if (dateStr.length >= 15) {
-                return dateStr.substring(0, 4) + '-' +
+                const formatted = dateStr.substring(0, 4) + '-' +
                        dateStr.substring(4, 6) + '-' +
                        dateStr.substring(6, 8) + 'T' +
                        dateStr.substring(9, 11) + ':' +
                        dateStr.substring(11, 13) + ':' +
                        dateStr.substring(13, 15);
+
+                // UTC timezone (Z) を保持
+                if (dateStr.endsWith('Z')) {
+                    return formatted + 'Z';
+                }
+                return formatted;
             }
             return dateStr;
         }
