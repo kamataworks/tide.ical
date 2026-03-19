@@ -10,7 +10,4 @@ locals {
     Environment = local.env
     ManagedBy   = "Terraform"
   }
-
-  # カスタムドメイン使用判定
-  use_custom_domain = var.domain_name != "" && var.hosted_zone_id != ""
 }
