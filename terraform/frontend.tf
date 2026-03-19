@@ -1,9 +1,6 @@
 resource "aws_s3_bucket" "frontend" {
-  bucket_prefix = "ecc-student-portal-frontend-${local.env}-"
-  tags = {
-    Project     = "ecc-student-portal"
-    Environment = local.env
-  }
+  bucket_prefix = "${local.resource_prefix}-frontend-"
+  tags          = local.common_tags
 }
 
 resource "aws_s3_bucket_website_configuration" "frontend" {
@@ -47,11 +44,12 @@ data "aws_iam_policy_document" "frontend_policy" {
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
-    http_version = "http2"
+    http_version    = "http2"
     is_ipv6_enabled = true
-    price_class     = "PriceClass_200"
+    price_class     = var.cloudfront_price_class
     enabled         = true
-    comment         = "[${local.env}] CDN for ecc-student-portal-frontend"
+    comment         = "[${local.env}] CDN for ${var.project_name} frontend"
+    aliases         = local.use_custom_domain ? [var.domain_name] : []
 
     origin {
         domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
@@ -77,31 +75,41 @@ resource "aws_cloudfront_distribution" "frontend" {
         }
 
         viewer_protocol_policy = "redirect-to-https"
-        min_ttl     = 0
-        default_ttl = 300
-        max_ttl     = 86400
+        min_ttl                = var.min_ttl
+        default_ttl            = var.default_ttl
+        max_ttl                = var.max_ttl
     }
 
     restrictions {
       geo_restriction {
-          restriction_type = "whitelist"
-          locations = [ "JP" ]
+        restriction_type = "whitelist"
+        locations        = var.geo_restriction_locations
       }
     }
 
     viewer_certificate {
-        cloudfront_default_certificate = true
+      cloudfront_default_certificate = local.use_custom_domain ? false : true
+      acm_certificate_arn            = local.use_custom_domain ? aws_acm_certificate.frontend[0].arn : null
+      ssl_support_method             = local.use_custom_domain ? "sni-only" : null
+      minimum_protocol_version       = local.use_custom_domain ? "TLSv1.2_2021" : null
     }
 
-    tags = {
-      Project     = "ecc-student-portal"
-      Environment = local.env
-    }
+    tags = local.common_tags
 }
 
 output "cloudfront_domain" {
   description = "cloudfront domain"
   value       = aws_cloudfront_distribution.frontend.domain_name
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for cache invalidation"
+  value       = aws_cloudfront_distribution.frontend.id
+}
+
+output "website_url" {
+  description = "Website URL"
+  value       = local.use_custom_domain ? "https://${var.domain_name}" : "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
 
 resource "aws_cloudfront_origin_access_identity" "frontend" {}

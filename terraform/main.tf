@@ -21,3 +21,8 @@ terraform {
 }
 
 data "aws_caller_identity" "current" {}
+
+# Route 53 hosted zone lookup (when using custom domain)
+data "aws_route53_zone" "main" {
+  zone_id = var.hosted_zone_id
+}
