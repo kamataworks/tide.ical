@@ -14,21 +14,29 @@
 # 依存関係のインストール
 bun install
 
-# ICSファイル生成
+# 気象庁サイトから潮位データをダウンロード（choihyo/, choi/ に保存）
+bun run download.ts
+
+# 潮まわりカレンダー生成
 bun run ushio.ts
 
-# 気象庁サイトから潮位表ダウンロード
-bun run download.ts
+# 満ち潮・引き潮カレンダー生成
+bun run shioji.ts
 ```
 
-生成されたICSファイルは `./build/ushio.ics` に保存されます。
+生成されるファイル：
+
+| ファイル/ディレクトリ | 内容 |
+|---|---|
+| `build/ushio.ics` | 潮まわりカレンダー（大潮・中潮・小潮・長潮・若潮） |
+| `build/shioji/{stationCode}.ics` | 各観測点の満ち潮・引き潮期間カレンダー |
+| `build/shioji-extrema/{stationCode}.ics` | 各観測点の満潮・干潮ピンポイントカレンダー |
+| `build/shioji.json` | 観測点情報（ステーション名・緯度経度） |
 
 ## 生成期間
 
-実行日を基準として：
-- **開始日**: 3ヶ月前
-- **終了日**: 24ヶ月後
-- **合計**: 約27ヶ月分のデータ
+- **潮まわり（ushio.ts）**：実行日の3ヶ月前〜24ヶ月後（約27ヶ月分）
+- **満ち潮・引き潮（shioji.ts）**：実行時の前年〜翌年の3年分（例：2026年3月実行なら2025〜2027年）
 
 ## ライセンス
 
@@ -56,6 +64,11 @@ MIT License
 ```
 tide.ical/
 ├── build/              # 生成されたICSファイルとWebサイト
+│   ├── ushio.ics
+│   ├── shioji/         # 満ち潮・引き潮ICS（観測点別）
+│   └── shioji-extrema/ # 満潮・干潮ICS（観測点別）
+├── choi/               # ダウンロードした毎時潮位・極値データ（JSON）
+├── choihyo/            # ダウンロードした潮汐調和定数表（JSON）
 └── terraform/          # インフラストラクチャ定義
     ├── main.tf         # プロバイダー設定
     ├── variables.tf    # 変数定義
@@ -93,7 +106,9 @@ terraform apply
 ```bash
 # プロジェクトルートで実行
 bun install
-bun run ushio.ts
+bun run download.ts
+TZ=Asia/Tokyo bun run ushio.ts
+TZ=Asia/Tokyo bun run shioji.ts
 ```
 
 生成されたファイルは `./build/` ディレクトリに保存されます。
@@ -106,48 +121,6 @@ BUCKET_NAME=$(cd terraform && terraform output -raw frontend_bucket)
 
 # ファイルをアップロード
 aws s3 sync ./build/ s3://${BUCKET_NAME}/ --delete
-
-# CloudFrontのキャッシュを無効化
-DISTRIBUTION_ID=$(cd terraform && terraform output -raw cloudfront_distribution_id)
-aws cloudfront create-invalidation \
-  --distribution-id ${DISTRIBUTION_ID} \
-  --paths "/*"
-```
-
-#### 3. デプロイスクリプト（推奨）
-
-以下の内容を `scripts/deploy.sh` として保存:
-
-```bash
-#!/bin/bash
-set -e
-
-echo "Building tide.ical..."
-bun run ushio.ts
-
-echo "Getting S3 bucket name..."
-cd terraform
-BUCKET_NAME=$(terraform output -raw frontend_bucket)
-DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
-cd ..
-
-echo "Uploading to S3: ${BUCKET_NAME}..."
-aws s3 sync ./build/ s3://${BUCKET_NAME}/ --delete
-
-echo "Invalidating CloudFront cache..."
-aws cloudfront create-invalidation \
-  --distribution-id ${DISTRIBUTION_ID} \
-  --paths "/*"
-
-echo "Deployment complete!"
-cd terraform && terraform output website_url && cd ..
-```
-
-使用方法:
-```bash
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh
-```
 
 ### 日常的な運用
 
