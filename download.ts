@@ -49,7 +49,11 @@ async function downloadChoihyo() {
 
   // 年ごとに潮汐調和定数表をダウンロード
   for (const year of years) {
-    const choihyoResp = await fetch(postUrl, { method: 'POST' })
+    const choihyoResp = await fetch(postUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `ys=${year}`,
+    })
     const choihyoHtml = await choihyoResp.text()
 
     const $ = cheerio.load(choihyoHtml)
