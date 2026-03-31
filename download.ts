@@ -12,6 +12,11 @@ async function downloadChoihyo() {
   const formAction = $('#choihyolist').attr('action')
 
 
+  // 年によって列名のフォーマットが異なる（単位の有無、分潮名の繰り返し等）ため、正規化してからマップする
+  const normalizeHeader = (header: string) => header
+    .replace(/（[^）]*）/g, '')    // （北緯）（cm）（°）等の単位・補足を除去
+    .replace(/\/[A-Z][0-9]の/g, '/'); // M2/M2の振幅 → M2/振幅
+
   const headerMap: Record<string, { type: 'string' | 'degreeAndMinute' | 'number' | 'linkText', normalizedName: string }> = {
       "番号": { type: "string", normalizedName: "number" },
       "地点記号": { type: "string", normalizedName: "stationCode" },
@@ -21,14 +26,14 @@ async function downloadChoihyo() {
       "MSL-潮位表基準面": { type: "number", normalizedName: "MSLTideStandardSurface" },
       "MSLの標高": { type: "number", normalizedName: "MSLAltitude" },
       "潮位表基準面の標高": { type: "number", normalizedName: "tideStandardSurfaceAltitude" },
-      "主要4分潮/M2/M2の振幅": { type: "number", normalizedName: "M2Amplitude" },
-      "主要4分潮/M2/M2の遅角": { type: "number", normalizedName: "M2Phase" },
-      "主要4分潮/S2/S2の振幅": { type: "number", normalizedName: "S2Amplitude" },
-      "主要4分潮/S2/S2の遅角": { type: "number", normalizedName: "S2Phase" },
-      "主要4分潮/K1/K1の振幅": { type: "number", normalizedName: "K1Amplitude" },
-      "主要4分潮/K1/K1の遅角": { type: "number", normalizedName: "K1Phase" },
-      "主要4分潮/O1/O1の振幅": { type: "number", normalizedName: "O1Amplitude" },
-      "主要4分潮/O1/O1の遅角": { type: "number", normalizedName: "O1Phase" },
+      "主要4分潮/M2/振幅": { type: "number", normalizedName: "M2Amplitude" },
+      "主要4分潮/M2/遅角": { type: "number", normalizedName: "M2Phase" },
+      "主要4分潮/S2/振幅": { type: "number", normalizedName: "S2Amplitude" },
+      "主要4分潮/S2/遅角": { type: "number", normalizedName: "S2Phase" },
+      "主要4分潮/K1/振幅": { type: "number", normalizedName: "K1Amplitude" },
+      "主要4分潮/K1/遅角": { type: "number", normalizedName: "K1Phase" },
+      "主要4分潮/O1/振幅": { type: "number", normalizedName: "O1Amplitude" },
+      "主要4分潮/O1/遅角": { type: "number", normalizedName: "O1Phase" },
       "分潮一覧表": { type: "linkText", normalizedName: "harmonic60Constants" },
       "備考": { type: "string", normalizedName: "remarks" },
   }
@@ -47,8 +52,15 @@ async function downloadChoihyo() {
 
   await fs.mkdir('./choihyo', { recursive: true })
 
+  const existingYears = new Set(
+    (await fs.readdir('./choihyo'))
+      .filter(f => f.endsWith('.json'))
+      .map(f => f.replace('.json', ''))
+  );
+  const missingYears = years.filter(y => !existingYears.has(y));
+
   // 年ごとに潮汐調和定数表をダウンロード
-  for (const year of years) {
+  for (const year of missingYears) {
     const choihyoResp = await fetch(postUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -128,9 +140,11 @@ async function downloadChoihyo() {
     const jsonArray = dataRows.map(row => {
       const jsonRow: Record<string, string | { degree: number, minute: number } | number | { name: string, href: string }> = {};
       for (const [key, value] of Object.entries(row)) {
-        switch(headerMap[key].type){
+        const mapEntry = headerMap[normalizeHeader(key)];
+        if (!mapEntry) continue;
+        switch(mapEntry.type){
           case 'string':
-            jsonRow[headerMap[key].normalizedName] = value as string;
+            jsonRow[mapEntry.normalizedName] = value as string;
             break;
           case 'degreeAndMinute':
             const degreeAndMinute = value as string; // 例: 139゜33'
@@ -138,16 +152,16 @@ async function downloadChoihyo() {
             if (match) {
               const degree = parseInt(match[1], 10);
               const minute = parseInt(match[2], 10);
-              jsonRow[headerMap[key].normalizedName] = { degree, minute };
+              jsonRow[mapEntry.normalizedName] = { degree, minute };
             } else {
-              jsonRow[headerMap[key].normalizedName] = 0; // 無効な値の場合は0
+              jsonRow[mapEntry.normalizedName] = 0; // 無効な値の場合は0
             }
             break;
           case 'number':
-            jsonRow[headerMap[key].normalizedName] = parseFloat(value as string) || 0;
+            jsonRow[mapEntry.normalizedName] = parseFloat(value as string) || 0;
             break;
           case 'linkText':
-            jsonRow[headerMap[key].normalizedName] = value as any;
+            jsonRow[mapEntry.normalizedName] = value as any;
             break;
         }
       }
