@@ -120,69 +120,10 @@ TZ=Asia/Tokyo bun run shioji.ts
 BUCKET_NAME=$(cd terraform && terraform output -raw frontend_bucket)
 
 # ファイルをアップロード
-aws s3 sync ./build/ s3://${BUCKET_NAME}/ --delete
-
-### 日常的な運用
-
-#### 環境の切り替え
-
-```bash
-# 現在のワークスペースを確認
-terraform workspace show
-
-# ワークスペース一覧
-terraform workspace list
-
-# ワークスペース切り替え
-terraform workspace select production
+aws s3 sync ./build s3://${BUCKET_NAME}/ \
+    --exclude "*.ics"
+aws s3 sync ./build s3://${BUCKET_NAME}/ \
+    --exclude "*" \
+    --include "*.ics" \
+    --content-type "text/calendar; charset=utf-8"
 ```
-
-#### インフラストラクチャの更新
-
-```bash
-cd terraform
-terraform workspace select production
-terraform plan    # 変更内容を確認
-terraform apply   # 適用
-```
-
-#### リソースの削除
-
-```bash
-# 注意: すべてのリソースが削除されます
-cd terraform
-terraform workspace select production
-terraform destroy
-```
-
-### トラブルシューティング
-
-#### ACM証明書の検証が完了しない
-
-カスタムドメインを使用する場合、ACM証明書のDNS検証が必要です。通常5〜10分で完了します。
-
-```bash
-# 検証レコードを確認
-aws acm describe-certificate \
-  --certificate-arn <証明書ARN> \
-  --region us-east-1
-```
-
-#### CloudFrontのデプロイが遅い
-
-CloudFrontディストリビューションの作成・更新には15〜30分かかることがあります。これは正常な動作です。
-
-#### 地理的制限の変更
-
-デフォルトでは日本国内のみアクセス可能です。変更する場合は `terraform.tfvars` を編集:
-
-```hcl
-geo_restriction_locations = ["JP", "US"]  # 日本とアメリカからアクセス可能
-```
-
-### セキュリティ考慮事項
-
-1. **IAM権限の最小化**: デプロイ用のIAMユーザーには必要最小限の権限のみを付与
-2. **Terraform状態ファイル**: S3バケットで暗号化とバージョニングを有効化
-3. **カスタムドメイン**: HTTPS強制（CloudFrontの設定）
-4. **地理的制限**: デフォルトで日本国内のみアクセス可能

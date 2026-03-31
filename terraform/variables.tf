@@ -24,3 +24,14 @@ variable "min_ttl" {
   type    = number
   default = 0
 }
+
+variable "domain_name" {
+  description = "Custom domain name for the frontend (e.g. tide.ical.kamataworks.com)"
+  type        = string
+}
+
+variable "geo_restriction_locations" {
+  description = "List of country codes for geo restriction. Empty list means no restriction."
+  type        = list(string)
+  default     = []
+}

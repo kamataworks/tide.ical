@@ -39,6 +39,9 @@ resource "aws_cloudfront_distribution" "frontend" {
   price_class     = var.cloudfront_price_class
   enabled         = true
   comment         = "[${local.env}] CDN for ${var.project_name} frontend"
+  aliases         = [var.domain_name]
+
+  depends_on = [aws_acm_certificate_validation.frontend]
 
   origin {
     domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
@@ -69,12 +72,15 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   restrictions {
     geo_restriction {
-      restriction_type = "none"
+      restriction_type = length(var.geo_restriction_locations) > 0 ? "whitelist" : "none"
+      locations        = var.geo_restriction_locations
     }
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = aws_acm_certificate.frontend.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   tags = local.common_tags
