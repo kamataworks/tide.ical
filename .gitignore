@@ -182,6 +182,7 @@ build
 !build/shioji.html
 !build/shioji.json
 !build/CNAME
+!build/robots.txt
 !build/ogp.png
 !build/icon.png
 !build/icon180x180.png
